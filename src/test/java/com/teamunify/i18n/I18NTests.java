@@ -5,13 +5,38 @@ import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.util.Date;
 import org.junit.Test;
-import com.teamunify.i18n.I;
 import com.teamunify.util.S;
 import static org.apache.commons.lang.StringEscapeUtils.unescapeHtml;
 
 @SuppressWarnings("deprecation")
 public class I18NTests {
-  private static final Date nulldate = new Date((new Date(30, 0, 0)).getTime() + 103295);
+  // TODO: deal with null dates: 
+  // private static final Date nulldate = new Date(Util.MyUtil.NULL_DATE.getTime() + 103295);
+
+  @Test
+  public void testLanguageSupportTests() {
+    assertTrue(I.supports("fr"));
+    assertTrue(I.supports("es"));
+    assertTrue(I.supports("en_AU"));
+    assertTrue(I.supports("en", "AU"));
+  }
+
+  @Test
+  public void testSetup() {
+    I.setLanguage("en");
+    assertNotNull(I.getCurrentLanguage().translation);
+    assertTrue(LanguageSetting.emptyLanguageBundle == I.getCurrentLanguage().translation);
+  }
+
+  @Test
+  public void testTranslations() {
+    I.setLanguage("en");
+    assertEquals("ZIP CODE", I.tr("ZIP CODE"));
+    I.setLanguage("fr");
+    assertEquals("CODE POSTAL", I.tr("ZIP CODE"));
+    I.setLanguage("en_AU");
+    assertEquals("POSTAL CODE", I.tr("ZIP CODE"));
+  }
 
   @Test
   public void testHTMLEscapes() throws Exception {
@@ -114,13 +139,13 @@ public class I18NTests {
     assertEquals("1/3/99", I.dateToString(d, DateFormat.SHORT));
     assertEquals("Jan 3, 1999", I.dateToString(d, DateFormat.MEDIUM));
     assertEquals("January 3, 1999", I.dateToString(d, DateFormat.LONG));
-    assertEquals("", I.dateToString(nulldate, DateFormat.SHORT));
-    assertEquals("", I.dateToString(nulldate, DateFormat.MEDIUM));
-    assertEquals("", I.dateToString(nulldate, DateFormat.LONG));
+    // TODO: assertEquals("", I.dateToString(nulldate, DateFormat.SHORT));
+    //assertEquals("", I.dateToString(nulldate, DateFormat.MEDIUM));
+    //assertEquals("", I.dateToString(nulldate, DateFormat.LONG));
     assertEquals("", I.dateToString(null, DateFormat.SHORT));
     assertEquals("", I.dateToString(null, DateFormat.MEDIUM));
     assertEquals("", I.dateToString(null, DateFormat.LONG));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("03/01/99", I.dateToString(d, DateFormat.SHORT));
     assertEquals("3 janv. 1999", I.dateToString(d, DateFormat.MEDIUM));
     assertEquals("3 janvier 1999", I.dateToString(d, DateFormat.LONG));
@@ -131,7 +156,7 @@ public class I18NTests {
     final Date targetDate = new Date(97, 3, 2);
     I.setLanguage("en");
     assertEquals(targetDate, I.stringToDate("1997-04-02"));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals(targetDate, I.stringToDate("1997-04-02"));
   }
 
@@ -139,7 +164,7 @@ public class I18NTests {
   public void testLocaleDateInput() {
     final Date d = new Date(103, 0, 3);
 
-    //assertEquals(MyUtil.NULL_DATE, I.stringToDate(null));
+    //TODO: assertEquals(MyUtil.NULL_DATE, I.stringToDate(null));
     //assertEquals(MyUtil.NULL_DATE, I.stringToDate(""));
 
     I.setLanguage("en");
@@ -150,7 +175,7 @@ public class I18NTests {
     assertEquals(d, I.stringToDate("2003-01-03"));
     assertEquals(d, I.stringToDate("Jan 3, 2003"));
     assertEquals(d, I.stringToDate("January 3, 2003"));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals(d, I.stringToDate("3/1/03"));
     assertEquals(d, I.stringToDate("03/01/03"));
     assertEquals(d, I.stringToDate("3/1/2003"));
@@ -158,7 +183,7 @@ public class I18NTests {
     assertEquals(d, I.stringToDate("2003-01-03"));
     assertEquals(d, I.stringToDate("3 janv. 2003"));
     assertEquals(d, I.stringToDate("3 janvier 2003"));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals(d, I.stringToDate("3.1.03"));
     assertEquals(d, I.stringToDate("03.01.03"));
     assertEquals(d, I.stringToDate("3.1.2003"));
@@ -170,9 +195,9 @@ public class I18NTests {
   public void testLocaleDateInputHelpStrings() {
     I.setLanguage("en");
     assertEquals("M/d/yy", I.preferredDateFormat());
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("dd/MM/yy", I.preferredDateFormat());
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("dd.MM.yy", I.preferredDateFormat());
   }
 
@@ -180,97 +205,101 @@ public class I18NTests {
   public void testCurrencyFormatting() {
     I.setLanguage("en");
     assertEquals("$1,454,100.34", I.longToCurrencyString(145410034));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("1&nbsp;454&nbsp;100,34 &euro;", I.longToCurrencyString(145410034));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("1.454.100,34 &euro;", I.longToCurrencyString(145410034));
 
     BigDecimal amount = new BigDecimal("1454100.34");
     I.setLanguage("en");
     assertEquals("$1,454,100.34", I.numberToCurrencyString(amount));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("1&nbsp;454&nbsp;100,34 &euro;", I.numberToCurrencyString(amount));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("1.454.100,34 &euro;", I.numberToCurrencyString(amount));
+    I.setLanguage("en_AU");
+    assertEquals("$1,454,100.34", I.numberToCurrencyString(amount));
 
     double damount = 1454100.34;
     I.setLanguage("en");
     assertEquals("$1,454,100.34", I.numberToCurrencyString(damount));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("1&nbsp;454&nbsp;100,34 &euro;", I.numberToCurrencyString(damount));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("1.454.100,34 &euro;", I.numberToCurrencyString(damount));
 
     // Negative numbers
     I.setLanguage("en");
     assertEquals("-$1,454,100.34", I.longToCurrencyString(-145410034));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("-1&nbsp;454&nbsp;100,34 &euro;", I.longToCurrencyString(-145410034));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("-1.454.100,34 &euro;", I.longToCurrencyString(-145410034));
 
     amount = new BigDecimal("-1454100.34");
     I.setLanguage("en");
     assertEquals("-$1,454,100.34", I.numberToCurrencyString(amount));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("-1&nbsp;454&nbsp;100,34 &euro;", I.numberToCurrencyString(amount));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("-1.454.100,34 &euro;", I.numberToCurrencyString(amount));
 
     damount = -1454100.34;
     I.setLanguage("en");
     assertEquals("-$1,454,100.34", I.numberToCurrencyString(damount));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("-1&nbsp;454&nbsp;100,34 &euro;", I.numberToCurrencyString(damount));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("-1.454.100,34 &euro;", I.numberToCurrencyString(damount));
 
     // WITHOUT currency symbol
     amount = new BigDecimal("1454100.34");
     I.setLanguage("en");
     assertEquals("1,454,100.34", I.numberToCurrencyString(amount, false));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("1&nbsp;454&nbsp;100,34", I.numberToCurrencyString(amount, false));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("1.454.100,34", I.numberToCurrencyString(amount, false));
+    I.setLanguage("en_AU");
+    assertEquals("1,454,100.34", I.numberToCurrencyString(amount, false));
 
     damount = 1454100.34;
     I.setLanguage("en");
     assertEquals("1,454,100.34", I.numberToCurrencyString(damount, false));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("1&nbsp;454&nbsp;100,34", I.numberToCurrencyString(damount, false));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("1.454.100,34", I.numberToCurrencyString(damount, false));
 
     amount = new BigDecimal("-1454100.34");
     I.setLanguage("en");
     assertEquals("-1,454,100.34", I.numberToCurrencyString(amount, false));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("-1&nbsp;454&nbsp;100,34", I.numberToCurrencyString(amount, false));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("-1.454.100,34", I.numberToCurrencyString(amount, false));
 
     damount = -1454100.34;
     I.setLanguage("en");
     assertEquals("-1,454,100.34", I.numberToCurrencyString(damount, false));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("-1&nbsp;454&nbsp;100,34", I.numberToCurrencyString(damount, false));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("-1.454.100,34", I.numberToCurrencyString(damount, false));
 
     // Trailing zeroes...
     damount = 3459.2;
     I.setLanguage("en");
     assertEquals("$3,459.20", I.numberToCurrencyString(damount));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("3&nbsp;459,20 &euro;", I.numberToCurrencyString(damount));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("3.459,20 &euro;", I.numberToCurrencyString(damount));
     I.setLanguage("en");
     assertEquals("3,459.20", I.numberToCurrencyString(damount, false));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("3&nbsp;459,20", I.numberToCurrencyString(damount, false));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("3.459,20", I.numberToCurrencyString(damount, false));
   }
 
@@ -281,18 +310,18 @@ public class I18NTests {
     assertEquals(153410034L, I.currencyStringToLong("$1534100.34", 0L));
     assertEquals(153410034L, I.currencyStringToLong("1,534,100.34", 0L));
     assertEquals(153410034L, I.currencyStringToLong("1534100.34", 0L));
-    I.setLanguage("de");
-    assertEquals(153410034L, I.currencyStringToLong("1.534.100,34 €", 0L));
-    assertEquals(153410034L, I.currencyStringToLong("1534100,34 €", 0L));
+    I.setLanguage("de_DE");
+    assertEquals(153410034L, I.currencyStringToLong("1.534.100,34 â¬", 0L));
+    assertEquals(153410034L, I.currencyStringToLong("1534100,34 â¬", 0L));
     assertEquals(153410034L, I.currencyStringToLong("1.534.100,34", 0L));
     assertEquals(153410034L, I.currencyStringToLong("1534100,34", 0L));
-    I.setLanguage("fr");
-    assertEquals(153410034L, I.currencyStringToLong("1534100,34 €", 0L));
-    assertEquals(153410034L, I.currencyStringToLong("1 534 100,34 €", 0L));
+    I.setLanguage("fr_FR");
+    assertEquals(153410034L, I.currencyStringToLong("1534100,34 â¬", 0L));
+    assertEquals(153410034L, I.currencyStringToLong("1 534 100,34 â¬", 0L));
     assertEquals(153410034L, I.currencyStringToLong("1 534 100,34", 0L));
     assertEquals(153410034L, I.currencyStringToLong("1534100,34", 0L));
     // non-breaking spaces ok from the user...
-    assertEquals(153410034L, I.currencyStringToLong(unescapeHtml("1&nbsp;534&nbsp;100,34 €"), 0L));
+    assertEquals(153410034L, I.currencyStringToLong(unescapeHtml("1&nbsp;534&nbsp;100,34 â¬"), 0L));
     assertEquals(153410034L, I.currencyStringToLong(unescapeHtml("1&nbsp;534&nbsp;100,34"), 0L));
 
     I.setLanguage("en");
@@ -302,14 +331,14 @@ public class I18NTests {
     assertEquals("1534100.34", I.currencyStringToNumber("1534100.34", 0L).toString());
     assertEquals("1534100.34", I.currencyStringToNumber("$1,534,100.34", 0L).toString());
     assertEquals("1534100.34", I.currencyStringToNumber("$1534100.34", 0L).toString());
-    I.setLanguage("fr");
-    assertEquals("1534100.34", I.currencyStringToNumber("1 534 100,34 €", 0L).toString());
-    assertEquals("1534100.34", I.currencyStringToNumber("1534100,34 €", 0L).toString());
+    I.setLanguage("fr_FR");
+    assertEquals("1534100.34", I.currencyStringToNumber("1 534 100,34 â¬", 0L).toString());
+    assertEquals("1534100.34", I.currencyStringToNumber("1534100,34 â¬", 0L).toString());
     assertEquals("1534100.34", I.currencyStringToNumber("1 534 100,34", 0L).toString());
     assertEquals("1534100.34", I.currencyStringToNumber("1534100,34", 0L).toString());
-    I.setLanguage("de");
-    assertEquals("1534100.34", I.currencyStringToNumber("1.534.100,34 €", 0L).toString());
-    assertEquals("1534100.34", I.currencyStringToNumber("1534100,34 €", 0L).toString());
+    I.setLanguage("de_DE");
+    assertEquals("1534100.34", I.currencyStringToNumber("1.534.100,34 â¬", 0L).toString());
+    assertEquals("1534100.34", I.currencyStringToNumber("1534100,34 â¬", 0L).toString());
     assertEquals("1534100.34", I.currencyStringToNumber("1.534.100,34", 0L).toString());
     assertEquals("1534100.34", I.currencyStringToNumber("1534100,34", 0L).toString());
 
@@ -323,14 +352,14 @@ public class I18NTests {
     assertEquals(-153410034L, I.currencyStringToLong("-$1534100.34", 0L));
     assertEquals(-153410034L, I.currencyStringToLong("($1,534,100.34)", 0L));
     assertEquals(-153410034L, I.currencyStringToLong("($1534100.34)", 0L));
-    I.setLanguage("de");
-    assertEquals(-153410034L, I.currencyStringToLong("-1.534.100,34 €", 0L));
-    assertEquals(-153410034L, I.currencyStringToLong("-1534100,34 €", 0L));
+    I.setLanguage("de_DE");
+    assertEquals(-153410034L, I.currencyStringToLong("-1.534.100,34 â¬", 0L));
+    assertEquals(-153410034L, I.currencyStringToLong("-1534100,34 â¬", 0L));
     assertEquals(-153410034L, I.currencyStringToLong("-1.534.100,34", 0L));
     assertEquals(-153410034L, I.currencyStringToLong("-1534100,34", 0L));
-    I.setLanguage("fr");
-    assertEquals(-153410034L, I.currencyStringToLong("-1534100,34 €", 0L));
-    assertEquals(-153410034L, I.currencyStringToLong("-1 534 100,34 €", 0L));
+    I.setLanguage("fr_FR");
+    assertEquals(-153410034L, I.currencyStringToLong("-1534100,34 â¬", 0L));
+    assertEquals(-153410034L, I.currencyStringToLong("-1 534 100,34 â¬", 0L));
     assertEquals(-153410034L, I.currencyStringToLong("-1 534 100,34", 0L));
     assertEquals(-153410034L, I.currencyStringToLong("-1534100,34", 0L));
 
@@ -339,14 +368,14 @@ public class I18NTests {
     assertEquals("-1534100.34", I.currencyStringToNumber("-1534100.34", 0L).toString());
     assertEquals("-1534100.34", I.currencyStringToNumber("-$1,534,100.34", 0L).toString());
     assertEquals("-1534100.34", I.currencyStringToNumber("-$1534100.34", 0L).toString());
-    I.setLanguage("fr");
-    assertEquals("-1534100.34", I.currencyStringToNumber("-1 534 100,34 €", 0L).toString());
-    assertEquals("-1534100.34", I.currencyStringToNumber("-1534100,34 €", 0L).toString());
+    I.setLanguage("fr_FR");
+    assertEquals("-1534100.34", I.currencyStringToNumber("-1 534 100,34 â¬", 0L).toString());
+    assertEquals("-1534100.34", I.currencyStringToNumber("-1534100,34 â¬", 0L).toString());
     assertEquals("-1534100.34", I.currencyStringToNumber("-1 534 100,34", 0L).toString());
     assertEquals("-1534100.34", I.currencyStringToNumber("-1534100,34", 0L).toString());
-    I.setLanguage("de");
-    assertEquals("-1534100.34", I.currencyStringToNumber("-1.534.100,34 €", 0L).toString());
-    assertEquals("-1534100.34", I.currencyStringToNumber("-1534100,34 €", 0L).toString());
+    I.setLanguage("de_DE");
+    assertEquals("-1534100.34", I.currencyStringToNumber("-1.534.100,34 â¬", 0L).toString());
+    assertEquals("-1534100.34", I.currencyStringToNumber("-1534100,34 â¬", 0L).toString());
     assertEquals("-1534100.34", I.currencyStringToNumber("-1.534.100,34", 0L).toString());
     assertEquals("-1534100.34", I.currencyStringToNumber("-1534100,34", 0L).toString());
 
@@ -356,9 +385,9 @@ public class I18NTests {
     assertEquals("1534100", I.currencyStringToNumber("1534100", 0L).toString());
     assertEquals("1534100", I.currencyStringToNumber("$1,534,100", 0L).toString());
     assertEquals("1534100", I.currencyStringToNumber("$1534100", 0L).toString());
-    I.setLanguage("fr");
-    assertEquals("1534100", I.currencyStringToNumber("1 534 100 €", 0L).toString());
-    assertEquals("1534100", I.currencyStringToNumber("1534100 €", 0L).toString());
+    I.setLanguage("fr_FR");
+    assertEquals("1534100", I.currencyStringToNumber("1 534 100 â¬", 0L).toString());
+    assertEquals("1534100", I.currencyStringToNumber("1534100 â¬", 0L).toString());
     assertEquals("1534100", I.currencyStringToNumber("1 534 100", 0L).toString());
     assertEquals("1534100", I.currencyStringToNumber("1534100", 0L).toString());
   }
@@ -367,9 +396,9 @@ public class I18NTests {
   public void testCurrencyHelp() {
     I.setLanguage("en");
     assertEquals("#,###.##", I.preferredCurrencyFormat());
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("#\u00a0###,##", I.preferredCurrencyFormat());
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("#.###,##", I.preferredCurrencyFormat());
   }
 
@@ -378,10 +407,10 @@ public class I18NTests {
     I.setLanguage("en");
     assertEquals("#,###.##", I.preferredNumberFormat(2));
     assertEquals("#,###", I.preferredNumberFormat(0));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("#\u00a0###,##", I.preferredNumberFormat(2));
     assertEquals("#\u00a0###", I.preferredNumberFormat(0));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("#.###,##", I.preferredNumberFormat(2));
     assertEquals("#.###", I.preferredNumberFormat(0));
   }
@@ -393,10 +422,14 @@ public class I18NTests {
     assertEquals("100", I.stringToNumber(null, 100).toString());
     assertEquals("1534100.34", I.stringToNumber("1,534,100.34", 0L).toString());
     assertEquals("1534100.34", I.stringToNumber("1534100.34", 0L).toString());
-    I.setLanguage("fr");
+    I.setLanguage("en_AU");
+    assertEquals("100", I.stringToNumber("", 100).toString());
+    assertEquals("100", I.stringToNumber(null, 100).toString());
+    assertEquals("1534100.34", I.stringToNumber("1,534,100.34", 0L).toString());
+    I.setLanguage("fr_FR");
     assertEquals("1534100.34", I.stringToNumber("1 534 100,34", 0L).toString());
     assertEquals("1534100.34", I.stringToNumber("1534100,34", 0L).toString());
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("1534100.34", I.stringToNumber("1.534.100,34", 0L).toString());
     assertEquals("1534100.34", I.stringToNumber("1534100,34", 0L).toString());
 
@@ -404,10 +437,10 @@ public class I18NTests {
     I.setLanguage("en");
     assertEquals("-1534100.34", I.stringToNumber("-1,534,100.34", 0L).toString());
     assertEquals("-1534100.34", I.stringToNumber("-1534100.34", 0L).toString());
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("-1534100.34", I.stringToNumber("-1 534 100,34", 0L).toString());
     assertEquals("-1534100.34", I.stringToNumber("-1534100,34", 0L).toString());
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("-1534100.34", I.stringToNumber("-1.534.100,34", 0L).toString());
     assertEquals("-1534100.34", I.stringToNumber("-1534100,34", 0L).toString());
 
@@ -417,12 +450,12 @@ public class I18NTests {
     assertEquals("1534100.34", I.stringToNumber("  1534100.34  ", 0L).toString());
     assertEquals("-1534100.34", I.stringToNumber("  - 1,534,100.34  ", 0L).toString());
     assertEquals("-1534100.34", I.stringToNumber(" - 1534100.34  ", 0L).toString());
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("1534100.34", I.stringToNumber(" 1 534 100,34 ", 0L).toString());
     assertEquals("1534100.34", I.stringToNumber("  1534100,34 ", 0L).toString());
     assertEquals("-1534100.34", I.stringToNumber(" -1 534 100,34 ", 0L).toString());
     assertEquals("-1534100.34", I.stringToNumber("  -1534100,34", 0L).toString());
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("1534100.34", I.stringToNumber(" 1.534.100,34", 0L).toString());
     assertEquals("1534100.34", I.stringToNumber("   1534100,34", 0L).toString());
     assertEquals("-1534100.34", I.stringToNumber(" - 1.534.100,34", 0L).toString());
@@ -436,11 +469,11 @@ public class I18NTests {
     assertEquals("1,534,100.34", I.numberToString(1534100.34));
     assertEquals("1,534,100", I.numberToString(1534100));
     assertEquals("-1,534,100", I.numberToString(-1534100));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("1 534 100,34", I.numberToString(1534100.34));
     assertEquals("1 534 100", I.numberToString(1534100));
     assertEquals("-1 534 100", I.numberToString(-1534100));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("1.534.100,34", I.numberToString(1534100.34));
     assertEquals("1.534.100", I.numberToString(1534100));
     assertEquals("-1.534.100", I.numberToString(-1534100));
@@ -450,9 +483,9 @@ public class I18NTests {
   public void testImageLocalization() {
     I.setLanguage("en");
     assertEquals("img/image/submitButton.png", I.imageURL("img/image/submitButton.png"));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("img/image/submitButton_fr.png", I.imageURL("img/image/submitButton.png"));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("img/image/submitButton_de.png", I.imageURL("img/image/submitButton.png"));
   }
 
@@ -461,27 +494,29 @@ public class I18NTests {
     Date d = new Date(101, 4, 2);
     I.setLanguage("en");
     assertEquals("05/02/2001", I.dateToString(d, I.TU_STANDARD_DATE_TYPE));
-    assertEquals("", I.dateToString(nulldate, I.TU_STANDARD_DATE_TYPE));
+    // TODO: assertEquals("", I.dateToString(nulldate, I.TU_STANDARD_DATE_TYPE));
     assertEquals("", I.dateToString(null, I.TU_STANDARD_DATE_TYPE));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("02/05/2001", I.dateToString(d, I.TU_STANDARD_DATE_TYPE));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("02.05.2001", I.dateToString(d, I.TU_STANDARD_DATE_TYPE));
+    I.setLanguage("en_AU");
+    assertEquals("02/05/2001", I.dateToString(d, I.TU_STANDARD_DATE_TYPE));
   }
 
   @Test
   public void testOmissionOfCurrencySymbol() {
     I.setLanguage("en");
     assertEquals("8,888.88", I.longToCurrencyString(888888, false));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("8&nbsp;888,88", I.longToCurrencyString(888888, false));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("8.888,88", I.longToCurrencyString(888888, false));
     I.setLanguage("en");
     assertEquals("8,888.88", I.numberToCurrencyString(8888.88, false));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("8&nbsp;888,88", I.numberToCurrencyString(8888.88, false));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("8.888,88", I.numberToCurrencyString(8888.88, false));
   }
 
@@ -497,34 +532,34 @@ public class I18NTests {
   public void testPercentages() {
     I.setLanguage("en");
     assertEquals("88%", I.wholeNumberToPercentage(88));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("88 %", I.wholeNumberToPercentage(88));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("88%", I.wholeNumberToPercentage(88));
 
     I.setLanguage("en");
     assertEquals("88%", I.fractionalNumberToPercentage(0.88));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("88 %", I.fractionalNumberToPercentage(0.88));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("88%", I.fractionalNumberToPercentage(0.88));
 
     I.setLanguage("en");
     assertEquals("12.25%", I.fractionalNumberToPercentage(0.1225));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("4,25 %", I.fractionalNumberToPercentage(0.0425));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("11,33%", I.fractionalNumberToPercentage(0.11333));
 
     I.setLanguage("en");
     assertEquals("88%", I.intToPercentage(88, 0));
     assertEquals("88.3%", I.intToPercentage(883, 1));
     assertEquals("88.35%", I.intToPercentage(8835, 2));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("88 %", I.intToPercentage(88, 0));
     assertEquals("88,3 %", I.intToPercentage(883, 1));
     assertEquals("88,35 %", I.intToPercentage(8835, 2));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("88%", I.intToPercentage(88, 0));
     assertEquals("88,3%", I.intToPercentage(883, 1));
     assertEquals("88,35%", I.intToPercentage(8835, 2));
@@ -536,18 +571,18 @@ public class I18NTests {
     // rounding down
     I.setLanguage("en");
     assertEquals("123984.33", Double.toString(I.roundCurrency(d)));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("123984.33", Double.toString(I.roundCurrency(d)));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("123984.33", Double.toString(I.roundCurrency(d)));
 
     // rounding up
     d = 123984.5050001;
     I.setLanguage("en");
     assertEquals("123984.51", Double.toString(I.roundCurrency(d)));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("123984.51", Double.toString(I.roundCurrency(d)));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("123984.51", Double.toString(I.roundCurrency(d)));
   }
 
@@ -555,9 +590,9 @@ public class I18NTests {
   public void testCurrencySymbol() {
     I.setLanguage("en");
     assertEquals("$", I.currencySign());
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("\u20ac", I.currencySign());
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("\u20ac", I.currencySign());
   }
 
@@ -606,12 +641,12 @@ public class I18NTests {
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("03/04/11 11:37 pm", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 23:37:10", null), true));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 23:37", null), false));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("4/3/11 11:37 pm", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("04/03/11 11:37 pm", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 23:37:10", null), true));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 23:37", null), false));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("4.3.11 11:37 pm", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("04.03.11 11:37 pm", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 23:37:10", null), true));
@@ -626,31 +661,34 @@ public class I18NTests {
     assertEquals("03/04/2011 11:37 PM", I.timestampToString(d, false, false));
     assertEquals("11:37 PM", I.timestampToString(d, true, false));
     assertEquals("11:37:10 PM", I.timestampToString(d, true, true));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("04/03/2011 11:37:10 PM", I.timestampToString(d));
     assertEquals("04/03/2011 11:37 PM", I.timestampToString(d, false, false));
     assertEquals("11:37 PM", I.timestampToString(d, true, false));
     assertEquals("11:37:10 PM", I.timestampToString(d, true, true));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("04.03.2011 11:37:10 PM", I.timestampToString(d));
     assertEquals("04.03.2011 11:37 PM", I.timestampToString(d, false, false));
     assertEquals("11:37 PM", I.timestampToString(d, true, false));
     assertEquals("11:37:10 PM", I.timestampToString(d, true, true));
+    assertEquals("11:37:10 PM PST", I.timestampToString(d, true, true, true));
+    System.setProperty("user.timezone", "Australia/North");
+    assertEquals("11:37:10 PM CST", I.timestampToString(d, true, true, true));
   }
 
   @Test
   public void testCompactCurrencyFormat() {
     I.setLanguage("en");
     assertEquals("8888.88", I.longToCompactCurrencyString(888888));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("8888,88", I.longToCompactCurrencyString(888888));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("8888,88", I.longToCompactCurrencyString(888888));
     I.setLanguage("en");
     assertEquals("8888.88", I.numberToCompactCurrencyString(8888.88));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("8888,88", I.numberToCompactCurrencyString(8888.88));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("8888,88", I.numberToCompactCurrencyString(8888.88));
   }
 
@@ -658,9 +696,9 @@ public class I18NTests {
   public void testCompactNumberFormat() {
     I.setLanguage("en");
     assertEquals("8888.88", I.numberToCompactString(8888.88));
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals("8888,88", I.numberToCompactString(8888.88));
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals("8888,88", I.numberToCompactString(8888.88));
   }
 
@@ -689,10 +727,10 @@ public class I18NTests {
   @Test
   public void testJavascriptEscapes() {
     I.setLanguage("en");
-    assertEquals("H\\u00E9llo", I.trj("H�llo"));
+    assertEquals("H\\u00E9llo", I.trj("Héllo"));
     assertEquals("Tony\\'s brother says \\\"Hi!\\\"", I.trj("Tony's brother says \"Hi!\""));
 
-    assertEquals("H\\u00E9llo", I.trfj("{0}", "H�llo"));
+    assertEquals("H\\u00E9llo", I.trfj("{0}", "Héllo"));
     assertEquals("Tony\\'s brother says \\\"Hi!\\\"", I.trfj("Tony''s brother says {0}", S.qq("Hi!")));
   }
 
@@ -700,9 +738,9 @@ public class I18NTests {
   public void testGetFractionDigits() {
     I.setLanguage("en");
     assertEquals(2, I.getFractionDigits());
-    I.setLanguage("fr");
+    I.setLanguage("fr_FR");
     assertEquals(2, I.getFractionDigits());
-    I.setLanguage("de");
+    I.setLanguage("de_DE");
     assertEquals(2, I.getFractionDigits());
   }
 

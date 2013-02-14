@@ -14,144 +14,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Currency;
 import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.TimeZone;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-/**
- * This stores the pair of Locale and ResourceBundle. The former is needed by message format to format currency, dates,
- * etc. The latter holds the current translations for all messages. These are stored in thread local variables during
- * request processing.
- * 
- * @see com.teamunify.i18n.ServletLocaleFilter
- * 
- * @author tonykay
- */
-class LanguageSetting {
-  public LanguageSetting(Locale locale, ResourceBundle translation) {
-    super();
-    this.locale = locale;
-    this.translation = translation;
-    this.formatter = new MessageFormat("", locale);
-
-    DecimalFormat d = (DecimalFormat) NumberFormat.getCurrencyInstance(locale);
-    currencySymbol = d.getDecimalFormatSymbols().getCurrencySymbol();
-  }
-
-  final Locale locale;
-  final ResourceBundle translation;
-  final MessageFormat formatter;
-  final String currencySymbol;
-
-  public DateFormat formatterFor(int style) {
-    switch (style) {
-      case DateFormat.SHORT:
-        return getShortDateParser();
-      case DateFormat.MEDIUM:
-        return getMediumDateParser();
-      case DateFormat.LONG:
-        return getLongDateParser();
-      case I.TU_STANDARD_DATE_TYPE:
-        return getTuStandardDateFormat();
-      default:
-        return DateFormat.getDateInstance(style, locale);
-    }
-  }
-
-  // TeamUnify standard date format: 4 digits year (yyyy)
-  public DateFormat getTuStandardDateFormat() {
-    SimpleDateFormat fm = null;
-
-    if (locale.getLanguage().equals(Locale.FRENCH.toString())) // format: dd/MM/yyyy
-      fm = new SimpleDateFormat("dd/MM/yyyy", locale);
-    else if (locale.getLanguage().equals(Locale.GERMAN.toString())) // format: dd.MM.yyyy
-      fm = new SimpleDateFormat("dd.MM.yyyy", locale);
-    else
-      //if (locale == Locale.US)
-      fm = new SimpleDateFormat("MM/dd/yyyy", locale); // format: MM/dd/yyyy
-
-    fm.setLenient(true);
-
-    return fm;
-  }
-
-  // FIXME: Generalize and factor out
-  // TeamUnify standard date format: 2 digits year (yy)
-  public DateFormat getTuStandardDateFormatShort() {
-    SimpleDateFormat fm = null;
-
-    if (locale.getLanguage().equals(Locale.FRENCH.toString())) // format: dd/MM/yy
-      fm = new SimpleDateFormat("dd/MM/yy", locale);
-    else if (locale.getLanguage().equals(Locale.GERMAN.toString())) // format: dd.MM.yy
-      fm = new SimpleDateFormat("dd.MM.yy", locale);
-    else
-      //if (locale == Locale.US)
-      fm = new SimpleDateFormat("MM/dd/yy", locale); // format: MM/dd/yy
-
-    fm.setLenient(true);
-
-    return fm;
-  }
-
-  // TeamUnify standard date format: no year
-  public DateFormat getTuStandardDateFormatNoYear() {
-    SimpleDateFormat fm = null;
-
-    if (locale.getLanguage().equals(Locale.FRENCH.toString()))
-      fm = new SimpleDateFormat("dd/MM", locale);
-    else if (locale.getLanguage().equals(Locale.GERMAN.toString()))
-      fm = new SimpleDateFormat("dd.MM", locale);
-    else
-      //if (locale == Locale.US)
-      fm = new SimpleDateFormat("MM/dd", locale);
-
-    fm.setLenient(true);
-
-    return fm;
-  }
-
-  public SimpleDateFormat getShortDateParser() {
-    return (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.SHORT, locale);
-  }
-
-  public SimpleDateFormat getMediumDateParser() {
-    return (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.MEDIUM, locale);
-  }
-
-  public SimpleDateFormat getLongDateParser() {
-    return (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.LONG, locale);
-  }
-
-  public SimpleDateFormat[] getDateParsers() {
-    SimpleDateFormat[] dateParsers = new SimpleDateFormat[5];
-    dateParsers[0] = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.SHORT, locale);
-    dateParsers[1] = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.MEDIUM, locale);
-    dateParsers[2] = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.LONG, locale);
-    dateParsers[3] = new SimpleDateFormat("yyyy-MM-dd", locale);
-    dateParsers[4] = (SimpleDateFormat) getTuStandardDateFormat();
-    return dateParsers;
-  }
-
-  public DateFormat getShortTimeFormat() {
-    return (SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.SHORT);
-  }
-
-  public DateFormat getLongTimeFormat() {
-    return (SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.MEDIUM);
-  }
-
-  public DateFormat getMilitaryTimeFormat(boolean withSeconds) {
-    return withSeconds ? new SimpleDateFormat("H:m:s") : new SimpleDateFormat("H:m");
-  }
-}
 
 /**
  * The central translation facility. Use the static methods like tr() to translate messages.
@@ -220,33 +88,12 @@ public final class I {
   private static Date defaultDate = null;
   private static Logger log = Logger.getLogger(I.class.getName());
   private static ThreadLocalLanguageSetting currentLanguage = new ThreadLocalLanguageSetting();
-  private static final HashMap<String, LanguageSetting> languages;
 
   /**
    * This is a custom date format. Please use DateFormat.SHORT/MEDIUM/LONG for other formats, which are locale
    * sensitive.
    */
   public static final int TU_STANDARD_DATE_TYPE = 100;
-
-  static {
-    ResourceBundle emptyBundle= new ResourceBundle() {
-      @Override
-      public Enumeration<String> getKeys() {
-        return new Vector<String>().elements();
-      }
-
-      @Override
-      protected Object handleGetObject(String key) {
-        return null;
-      }
-    };
-    languages = new HashMap<String, LanguageSetting>(3);
-    Locale enl = Locale.US, frl = Locale.FRANCE, del = Locale.GERMANY;
-    // FIXME: Load message bundles on startup 
-    languages.put("de", new LanguageSetting(del, emptyBundle));
-    languages.put("fr", new LanguageSetting(frl, emptyBundle));
-    languages.put("en", new LanguageSetting(enl, emptyBundle));
-  }
 
   // visible in other package: e.g., swimoffice JSP's, Beans
   /**
@@ -494,17 +341,16 @@ public final class I {
    * @param session
    *          The current session object. Can be null if you are not running in a webapp.
    * @param name
-   *          The language code (two letters). E.g. en es de...
+   *          The language code (two letters, followed by optional _ and two-letter country). E.g. en es de en_US en_AU.
+   *          IF YOU DROP THE COUNTRY, IT WILL DEFAULT TO US.
    * @see ServletLocaleFilter
    */
   public static void setLanguage(String name) {
-    if (languages.containsKey(name)) {
-      log.fine("setting language to " + name);
-      currentLanguage.set(languages.get(name));
-      // FIXME: This was TU-specific code...move to servlet filter subclass
-      //if (session != null)
-        //session.setAttribute("lang", name);
-    }
+    final String langOnly = name != null && name.contains("_") ? name.substring(0, 2) : name;
+    final String countryOnly = name != null && name.contains("_") ? name.substring(3) : "US";
+    LanguageSetting setting = new LanguageSetting(new Locale(langOnly, countryOnly));
+    log.info("setting language bundle to " + setting.translation.getClass().getName());
+    currentLanguage.set(setting);
   }
 
   /**
@@ -516,17 +362,11 @@ public final class I {
    * @return Current returns "en".
    */
   public static LanguageSetting getDefaultLanguage() {
-    return languages.get("en");
+    return new LanguageSetting(Locale.getDefault());
   }
 
-  /**
-   * Get a list of languages that have translations in the system.
-   * 
-   * @return A Set of strings that represent the legal things to pass to setLanguage.
-   * @see I#setLanguage
-   */
-  public static Set<String> getSupportedLanguages() {
-    return languages.keySet();
+  public static LanguageSetting getCurrentLanguage() {
+    return currentLanguage.get();
   }
 
   /**
@@ -537,7 +377,30 @@ public final class I {
    * @return True if the language has translations.
    */
   public static boolean supports(String lang) {
-    return languages.containsKey(lang);
+    if (lang == null || lang.length() == 0)
+      return false;
+    String parts[] = lang.split("_");
+    if (parts.length == 1)
+      return supports(lang, "");
+    else if (parts.length == 2)
+      return supports(parts[0], parts[1]);
+
+    return false;
+  }
+
+  /**
+   * Are translations loaded that give at least language-level support for the given locale
+   */
+  public static boolean supports(Locale l) {
+    LanguageSetting setting = new LanguageSetting(l);
+    return setting.translation != LanguageSetting.emptyLanguageBundle;
+  }
+
+  /**
+   * Are translations loaded that give at least language-level support for the given locale
+   */
+  public static boolean supports(String lang, String country) {
+    return supports(new Locale(lang, country));
   }
 
   private static Pattern boldPattern = Pattern.compile("\\*\\*([^*/_]*)\\*\\*");
@@ -592,7 +455,7 @@ public final class I {
    * @param d
    *          The date to format
    * @param style
-   *          One of DateFormat formats (e.g. SHORT/LONG/MEDIUM) or TU_STANDARD_DATE_TYPE.
+   *          One of DateFormat formats (e.g. SHORT/LONG/MEDIUM) or DEFAULT.
    * @return the locale-corrected string version of the date.
    */
   public static String dateToString(Date d, int style) {
@@ -690,9 +553,10 @@ public final class I {
         e = e1;
       }
     }
-    log.log(Level.SEVERE,
-            String.format("Failed to parse date >%s< when using language settings for %s", source,
-                          s.locale.getLanguage()), e);
+    if (log.isLoggable(Level.FINEST))
+      log.log(Level.FINEST,
+              String.format("Failed to parse date >%s< when using language settings for %s", source,
+                            s.locale.getLanguage()), e);
     return rv;
   }
 
@@ -978,13 +842,14 @@ public final class I {
       d.setPositiveSuffix("");
       d.setNegativePrefix("-");
       d.setNegativeSuffix("");
-      // In french, the official grouping separator is a Unicode thin space...WTF??? convert ASCII spaces to thin
-      // spaces....@#*%ing french
+      // In french, the official grouping separator is a Unicode thin space...convert ASCII spaces to thin
+      // spaces keeps input conversion from failing....
       if (symbols.getGroupingSeparator() == '\u00a0')
         amount = amount.replace(" ", "\u00a0");
       return fmt.parse(amount);
     } catch (ParseException e) {
-      log.log(Level.SEVERE, "Failed to parse currency: " + amount, e);
+      if (log.isLoggable(Level.FINEST))
+        log.log(Level.FINEST, "Failed to parse currency: " + amount, e);
     }
     return defaultValue;
   }
@@ -1514,7 +1379,8 @@ public final class I {
       SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S", Locale.ENGLISH);
       return df.parse(iso);
     } catch (Exception e) {
-      log.log(Level.SEVERE, "Unable to parse date: " + iso, e);
+      if (log.isLoggable(Level.FINEST))
+        log.log(Level.FINEST, "Unable to parse date: " + iso, e);
     }
     return defaultValue;
   }
@@ -1593,10 +1459,21 @@ public final class I {
   /**
    * Get default timezone; note this is locale independent and is set by the machine (or vm).
    * 
+   * <br/>
+   * TODO: Allow time zone setup in LanguageSetting
+   * 
    * @return timezone object for this machine
    */
   public static TimeZone getTimeZone() {
-    return TimeZone.getDefault();
+    TimeZone rv = null;
+    try {
+      rv = TimeZone.getTimeZone(System.getProperty("user.timezone"));
+      System.err.println("tz set to " + rv.getDisplayName());
+    } catch (Exception e) {
+      rv = TimeZone.getDefault();
+      System.err.println("tz not set. Defaulted to " + rv.getDisplayName());
+    }
+    return rv;
   }
 
   /**
