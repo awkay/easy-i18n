@@ -17,3 +17,18 @@ create internationalized programs. It includes the following features:
 - Numerous methods to support message formatting
 - Sample scripts for doing the extraction/merge step
 
+## Building
+
+This library uses Maven. You can import it into an IDE as a Maven project,
+or build it from the command line (the tests do not all pass during our 
+porting effort):
+
+    mvn compile -DskipTests
+
+The required Gnu Gettext libintl.jar can be obtained by building the GNU
+gettext package. We plan to get it on a Maven repository soon. For convenience,
+the 0.18.2 (requires Java 1.6, as we customized it for performance) is in the
+libs directory. Install it for local maven use with:
+
+    mvn -Dfile=libintl-0.18.2.jar -DgroupId=gnu.gettext -DartifactId=libintl -Dpackaging=jar -Dversion=0.18.2
+
