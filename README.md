@@ -32,3 +32,4 @@ libs directory. Install it for local maven use with:
 
     mvn -Dfile=libintl-0.18.2.jar -DgroupId=gnu.gettext -DartifactId=libintl -Dpackaging=jar -Dversion=0.18.2
 
+[Please see the wiki for full docs.](https://github.com/awkay/easy-i18n/wiki)
