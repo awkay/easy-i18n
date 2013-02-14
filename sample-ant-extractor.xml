@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+This build file demonstrates how one could use Ant to extract the i18n
+message from their source base, integrate that into template files, 
+merge with existing languages, and generate the desired runtime bundles
+for doing translation.
+
+This file should work on UNIX/Linux/OSX. It will fail on Windows without Cygwin.
+-->
+<project basedir="." default="build-classes" name="i18nMessages">
+	<loadproperties srcFile="../local.properties" />
+	<fail message="binpath is missing. Make sure to generate local.properties and add binpath = path_to_gettext" unless="binpath" />
+	<taskdef resource="net/sf/antcontrib/antlib.xml">
+		<classpath>
+			<pathelement location="build-deps/ant-contrib-1.0b3.jar" />
+		</classpath>
+	</taskdef>
+	<!-- languages in ADDITION to english -->
+	<property name="supported.languages" value="fr,es" />
+	<property name="xgettext" value="${binpath}/xgettext" />
+	<property name="msgmerge" value="${binpath}/msgmerge" />
+	<property name="msgfmt" value="${binpath}/msgfmt" />
+	<property name="msginit" value="${binpath}/msginit" />
+	<property name="pot.file" value="messages.pot" />
+	<tempfile destdir="/tmp" deleteonexit="true" property="text.file.list" />
+	<target name="prepare">
+		<mkdir dir="target/classes"/>
+	</target>
+	<!-- Finds all of the jsp/java files that could contain translation calls -->
+	<target name="build-filelist">
+		<exec executable="find" output="${text.file.list}" logError="true">
+         <!-- All your source locaionts -->
+			<arg value="../MyProject/src/main/java" />
+			<arg value="../WebProject/WebContent" />
+         <!-- All file suffixes that contain Java Code -->
+			<arg value="-name" />
+			<arg value="*.jsp" />
+			<arg value="-o" />
+			<arg value="-name" />
+			<arg value="*.java" />
+		</exec>
+	</target>
+	<!-- Extracts all strings from java and jsp files -->
+	<target name="build-pot" depends="build-filelist">
+		<exec executable="${xgettext}">
+			<arg value="-L" />
+			<arg value="Java" />
+			<arg value="-i" />
+			<arg value="--no-wrap" />
+			<arg value="--from-code" />
+			<arg value="utf-8" />
+			<arg value="-F" />
+			<arg value="-f" />
+			<arg value="${text.file.list}" />
+			<arg value="-ktrc:1c,2" />
+			<arg value="-ktrcw:1c,2" />
+			<arg value="-ktrcf:1c,2" />
+			<arg value="-ktrcfw:1c,2" />
+			<arg value="-ktr" />
+			<arg value="-ktrj" />
+			<arg value="-ktrfj" />
+			<arg value="-ktrw" />
+			<arg value="-ktrf" />
+			<arg value="-ktrfw" />
+			<arg value="--force-po" />
+			<arg value="--omit-header" />
+			<arg value="-o" />
+			<arg value="${pot.file}" />
+		</exec>
+	</target>
+	<target name="do-po">
+		<available file="${lang}.po" property="lang.exists" />
+		<if>
+			<istrue value="${lang.exists}" />
+			<then>
+				<antcall target="merge-po" />
+			</then>
+			<else>
+				<antcall target="create-po" />
+			</else>
+		</if>
+	</target>
+	<target name="create-po">
+		<available file="${lang}.po" property="lang.exists" />
+		<exec executable="${msginit}">
+			<arg value="--no-wrap" />
+			<arg value="-o" />
+			<arg value="${lang}.po" />
+			<arg value="-i" />
+			<arg value="${pot.file}" />
+		</exec>
+	</target>
+	<target name="merge-po">
+		<exec executable="${msgmerge}">
+			<arg value="-i" />
+			<arg value="-F" />
+			<arg value="--no-wrap" />
+			<arg value="-o" />
+			<arg value="${lang}.po" />
+			<arg value="${lang}.po" />
+			<arg value="${pot.file}" />
+		</exec>
+	</target>
+	<target name="build-class" depends="prepare">
+		<exec executable="${msgfmt}">
+			<arg value="--verbose" />
+			<arg value="-f" />
+			<arg value="-r" />
+			<arg value="com.teamunify.i18n.messages" />
+			<arg value="--java2" />
+			<arg value="-d" />
+			<arg value="target/classes" />
+			<arg value="-l" />
+			<arg value="${lang}" />
+			<arg value="${lang}.po" />
+		</exec>
+	</target>
+	<!-- Push any new messages from the POT file to the various PO files. -->
+	<target name="build-merged-po" depends="build-pot">
+		<foreach list="${supported.languages}" param="lang" target="do-po" />
+	</target>
+	<target name="build-classes" depends="build-merged-po">
+		<foreach list="${supported.languages}" param="lang" target="build-class" />
+	</target>
+</project>
