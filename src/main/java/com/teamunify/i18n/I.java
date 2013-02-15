@@ -19,6 +19,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.teamunify.i18n.escape.EscapeFunction;
+import com.teamunify.i18n.escape.HTMLEscapeFunction;
+import com.teamunify.i18n.settings.BooleanFunction;
+import com.teamunify.i18n.settings.CustomDateFormatVendor;
+import com.teamunify.i18n.settings.LanguageSetting;
+import com.teamunify.i18n.settings.LanguageSettingsProvider;
+import com.teamunify.i18n.settings.ThreadLocalLanguageSetting;
+import com.teamunify.i18n.settings.ThreadLocalLanguageSettingsProvider;
+import com.teamunify.i18n.webapp.ServletLocaleFilter;
+import com.teamunify.i18n.wiki.SimpleWikifier;
+import com.teamunify.i18n.wiki.Wikifier;
 
 /**
  * The central translation facility. Use the static methods like tr() to translate messages.
@@ -86,49 +97,23 @@ public final class I {
   };
   private static Date defaultDate = null;
   private static Logger log = LoggerFactory.getLogger(I.class);
-  private static LanguageSettingsProvider languageProvider =  new ThreadLocalLanguageSettingsProvider();
+  private static LanguageSettingsProvider languageProvider = new ThreadLocalLanguageSettingsProvider();
 
   /**
-   * This is a custom date format. Please use DateFormat.SHORT/MEDIUM/LONG for other formats, which are locale
-   * sensitive.
-   */
-  public static final int TU_STANDARD_DATE_TYPE = 100;
-
-  // visible in other package: e.g., swimoffice JSP's, Beans
-  /**
-   * Get a DateFormat object that is configured to output dates in a format standardized for our software platform. In
-   * particular, a 4-digit year is always displayed.
+   * Get a date format object for the given format ID. DateFormat.{SHORT,MEDIUM,LONG} are guaranteed to work. If you
+   * have registered custom date formats on locales, then those custom codes will work as well. If the primary is not
+   * available, it will return the altFormatID instead. It is recommended you pass SHORT/MEDIUM/LONG as the alternate to
+   * ensure you do not get null.
    * 
-   * @return A DateFormat object.
-   * @see java.text.DateFormat
+   * @param formatID
+   *          The format you want
+   * @param altFormatID
+   *          The DateFormat format you'll accept if formatID is not found for the current Locale
+   * @return The format, or null if neither the primary or secondary can be found.
    */
-  public static DateFormat getTuStandardDateFormat() {
-    LanguageSetting s = languageProvider.vend();
-    return s.getTuStandardDateFormat();
-  }
-
-  /**
-   * Get a DateFormat object that is configured to output dates in a format standardized for our software platform. In
-   * particular, a 2-digit year is always displayed.
-   * 
-   * @return A DateFormat object.
-   * @see java.text.DateFormat
-   */
-  public static DateFormat getTuStandardDateFormatShort() {
-    LanguageSetting s = languageProvider.vend();
-    return s.getTuStandardDateFormatShort();
-  }
-
-  /**
-   * Get a DateFormat object that is configured to output dates in a format standardized for our software platform. In
-   * particular, no year is displayed.
-   * 
-   * @return A DateFormat object.
-   * @see java.text.DateFormat
-   */
-  public static DateFormat getTuStandardDateFormatNoYear() {
-    LanguageSetting s = languageProvider.vend();
-    return s.getTuStandardDateFormatNoYear();
+  public static DateFormat getDateFormatter(int formatID, int altFormatID) {
+    LanguageSetting provider = languageProvider.vend();
+    return dateFormatVendor.getFormatFor(formatID, provider.locale, altFormatID);
   }
 
   /**
@@ -140,7 +125,6 @@ public final class I {
    * @return The translated string, or msg if there is none.
    */
   public static String tr(String msg) {
-    // FIXME: generalize escape mechanism
     return escape(tru(msg));
   }
 
@@ -356,10 +340,9 @@ public final class I {
   /**
    * Return the system-default language code for this installation.
    * 
-   * <p>
-   * TODO: Make this depend on TuProp.
+   * TODO: Allow application to set the "default" locale.
    * 
-   * @return Current returns "en".
+   * @return Currently returns Locale.getDefault().
    */
   public static LanguageSetting getDefaultLanguage() {
     return new LanguageSetting(Locale.getDefault());
@@ -434,20 +417,6 @@ public final class I {
   }
 
   /**
-   * A handy function to set the default date output type to TU_STANDARD_DATE_TYPE
-   * 
-   * @param d
-   *          The date to format
-   * @return the locale-corrected string version of the date.
-   */
-  public static String dateToString(Date d) {
-    if (isNullDate(d))
-      return "";
-    else
-      return dateToString(d, TU_STANDARD_DATE_TYPE);
-  }
-
-  /**
    * Convert a date object (which holds significant time as well) to a string that includes the date and time.
    * 
    * @param d
@@ -458,14 +427,23 @@ public final class I {
     if (isNullDate(d))
       return "";
     else
-      return timestampToString(d, false, true);
+      return timestampToString(d, DateFormat.SHORT, false, true);
   }
 
   public static String timestampToString(Date d, boolean timeOnly, boolean showSeconds) {
-    return timestampToString(d, timeOnly, showSeconds, false);
+    return timestampToString(d, DateFormat.SHORT, timeOnly, showSeconds, false);
+  }
+
+  public static String timestampToString(Date d, int fmtID, boolean timeOnly, boolean showSeconds) {
+    return timestampToString(d, fmtID, timeOnly, showSeconds, false);
   }
 
   public static String timestampToString(Date d, boolean timeOnly, boolean showSeconds, boolean showTimezone) {
+    return timestampToString(d, DateFormat.SHORT, timeOnly, showSeconds, showTimezone);
+  }
+
+  public static String timestampToString(Date d, int dateFmtID, boolean timeOnly, boolean showSeconds,
+    boolean showTimezone) {
     if (isNullDate(d))
       return "";
     LanguageSetting s = languageProvider.vend();
@@ -475,7 +453,7 @@ public final class I {
     if (timeOnly)
       return strTime;
     else
-      return dateToString(d, TU_STANDARD_DATE_TYPE) + " " + strTime;
+      return dateToString(d, dateFmtID) + " " + strTime;
   }
 
   /**
@@ -617,7 +595,20 @@ public final class I {
    * 
    * @return The format string, for helping the user understand input
    */
-  public static Object preferredDateFormat() {
+  public static String preferredDateFormat() {
+    LanguageSetting s = languageProvider.vend();
+    return s.getShortDateParser().toPattern();
+  }
+
+  /**
+   * Get the date input format accepted by the given formatID (which can be a custom date format you've installed).
+   * 
+   * @param fmtID
+   *          The formatID. DateFormat.SHORT/LONG/MEDIUM will always work.
+   * 
+   * @return The format string, for display to users.
+   */
+  public static String preferredDateFormat(int fmtID) {
     LanguageSetting s = languageProvider.vend();
     return s.getShortDateParser().toPattern();
   }
@@ -956,17 +947,16 @@ public final class I {
    * the image. This way, you can localize the images with simple translations.
    * 
    * <p>
-   * <b>TODO</b>: Currently this function is inconsistent with I.tr(). The I.tr() functions will default to the english
-   * text if there is no translation, ensuring that something useful is displayed. This function does no such check, and
-   * should fall back to the "en" version if the localized version is missing, and should carefully cache the existence
-   * of files so that it doesn't generate much filesystem IO.
+   * This function does NO filesystem check for the existence of images, it just morhs strings.
    * 
    * @param url
    *          A string ending with a . suffix (e.g. x.png)
+   * @param imitForLanguage
+   *          The language code that the application uses internally, and for which no suffix should be added.
    * @return A string with the locale inserted (e.g. x_fr.png)
    */
-  public static String imageURL(String url) {
-    if (languageProvider.vend().locale.getLanguage().equals("en") || url == null || url.length() == 0)
+  public static String imageURL(String url, String omitForLanguage) {
+    if (languageProvider.vend().locale.getLanguage().equals(omitForLanguage) || url == null || url.length() == 0)
       return url;
 
     int iIdx = url.lastIndexOf(".");
@@ -975,6 +965,16 @@ public final class I {
       return url;
     else
       return url.substring(0, iIdx) + "_" + languageProvider.vend().locale.getLanguage() + url.substring(iIdx);
+  }
+
+  /**
+   * Get an image URL with language suffix (ignores Locale language "en"). See also imageURL(String,String).
+   * 
+   * @param url
+   * @return
+   */
+  public static String imageURL(String url) {
+    return imageURL(url, "en");
   }
 
   /**
@@ -1337,77 +1337,6 @@ public final class I {
   }
 
   /**
-   * Get date format string pattern in yyyy
-   * 
-   * @return date format in string
-   */
-  public static String getTuStandardDateFormatPattern() {
-    DateFormat fmt = getTuStandardDateFormat();
-    if (fmt instanceof SimpleDateFormat) {
-      return ((SimpleDateFormat) fmt).toPattern();
-    }
-    return "MM/dd/yyyy"; // default;
-  }
-
-  /**
-   * Get date format string pattern in yy
-   * 
-   * @return date format in string
-   */
-  public static String getTuStandardDateFormatPatternShort() {
-    DateFormat fmt = getTuStandardDateFormatShort();
-    if (fmt instanceof SimpleDateFormat) {
-      return ((SimpleDateFormat) fmt).toPattern();
-    }
-    return "MM/dd/yy"; // default;
-  }
-
-  /**
-   * Get date format string pattern with no year part
-   * 
-   * @return date format in string
-   */
-  public static String getTuStandardDateFormatPatternNoYear() {
-    DateFormat fmt = getTuStandardDateFormatNoYear();
-    if (fmt instanceof SimpleDateFormat) {
-      return ((SimpleDateFormat) fmt).toPattern();
-    }
-    return "MM/dd"; // default;
-  }
-
-  /**
-   * Get date format for Date Picker.
-   * 
-   * @return date format, for instance, "mdy", "dmy", and "ymd"
-   */
-  public static String getDatePickerFormat() {
-    DateFormat fmt = getTuStandardDateFormat();
-    if (fmt instanceof SimpleDateFormat) {
-      String pattern = ((SimpleDateFormat) fmt).toPattern();
-      if (pattern.startsWith("dd"))
-        return "dmy";
-      else if (pattern.startsWith("yy"))
-        return "ymd";
-    }
-    return "mdy"; // default;
-  }
-
-  /**
-   * Get date separator for Date Picker.
-   * 
-   * @return either "/", "." or "-"
-   */
-  public static char getDatePickerSeparator() {
-    String today = dateToString(new Date());
-    for (int i = 0; i < today.length(); i++) {
-      char c = today.charAt(i);
-      if (c < '0' || c > '9')
-        return c;
-    }
-    return '/'; // default
-  }
-
-  /**
    * Get default timezone; note this is locale independent and is set by the machine (or vm).
    * 
    * <br/>
@@ -1435,7 +1364,7 @@ public final class I {
    * @param d
    */
   public static final boolean isNullDate(Date d) {
-    return getNullDateTest().apply(d);
+    return nullDateTest.apply(d);
   }
 
   public static BooleanFunction<Date> getNullDateTest() {
@@ -1518,7 +1447,49 @@ public final class I {
     return wikiEngine.wikified(s);
   }
 
+  /**
+   * Set the LanguageSettingsProvider. The provider determins the language to use at each call to the main API, and
+   * typically is either a global provider, or thread local.
+   * 
+   * @param p
+   */
   public static synchronized void setLanguageSettingsProvider(LanguageSettingsProvider p) {
     languageProvider = p;
+  }
+
+  private static CustomDateFormatVendor dateFormatVendor = new CustomDateFormatVendor();
+
+  /**
+   * Add support for a specific date format (for input and output) that essentially extend the Java built-in SHORT,
+   * MEDIUM, and LONG. The custom date format follows the same resolution rules as translations. The incoming locale
+   * includes country (e.g. en_US), the the API will first look for custom date formats registered on that exact Locale.
+   * If none are found, it will try dropping the country. If there are still none found, your date/time translation will
+   * throw an exception. So be <em>sure</em> to register some kind of formatter for each of your possible languages.
+   * 
+   * <p>
+   * By adding a custom date format, you can affect input and/or output. Your formatter will be selectable on output
+   * using the formatID you specify, and will be used as an additional interpreter of dates/times on input functions
+   * (after the built-in ones are tried).
+   * 
+   * <p>
+   * IMPORTANT: If you try to set the same formatID/locale combination more than once, the first one wins. You cannot
+   * change registrations.
+   * 
+   * @param formatID
+   *          Your custom format ID. MUST be greater than 10.
+   * @param l
+   *          The locale on which to apply it
+   * @param format
+   *          The format itself
+   * @param allowedOnInput
+   *          Should this format be used as acceptable input parsing
+   * @return True if registration was successful, false if there was a formatID collision (you already set it).
+   */
+  public static boolean addCustomDateFormat(int formatID, Locale l, DateFormat format, boolean allowedOnInput) {
+    format.setLenient(true);
+    boolean ok = dateFormatVendor.registerFormat(formatID, l, format);
+    if (ok && allowedOnInput)
+      dateFormatVendor.registerInputFormat(l, format);
+    return ok;
   }
 }

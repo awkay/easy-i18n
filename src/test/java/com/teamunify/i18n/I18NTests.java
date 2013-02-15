@@ -3,15 +3,44 @@ package com.teamunify.i18n;
 import static org.junit.Assert.*;
 import java.math.BigDecimal;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import com.teamunify.i18n.settings.BooleanFunction;
+import com.teamunify.i18n.settings.LanguageSetting;
 import com.teamunify.util.S;
 import static org.apache.commons.lang.StringEscapeUtils.unescapeHtml;
 
 @SuppressWarnings("deprecation")
 public class I18NTests {
+  /**
+   * This is a custom date format ID.
+   */
+  public static final int TU_STANDARD_DATE_TYPE = 100;
+  public static final int TU_MONTH_YEAR = 101;
+
   private static final Date myNullDate = new Date(30, 0, 0);
   private static final Date nulldatePlusSome = new Date(myNullDate.getTime() + 103295);
+
+  @BeforeClass
+  public static void setup() {
+    Locale en_US = new Locale("en", "US");
+    Locale en_AU = new Locale("en", "AU");
+    Locale fr = new Locale("fr");
+    Locale de = new Locale("de");
+    
+    I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, en_US, new SimpleDateFormat("MM/dd/yyyy", en_US), true);
+    I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, en_AU, new SimpleDateFormat("dd/MM/yyyy", en_AU), true);
+    I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, fr, new SimpleDateFormat("dd/MM/yyyy", fr), true);
+    I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, de, new SimpleDateFormat("dd.MM.yyyy", de), true);
+    
+    I.addCustomDateFormat(TU_MONTH_YEAR, en_US, new SimpleDateFormat("MM/yy", en_US), false);
+    I.addCustomDateFormat(TU_MONTH_YEAR, en_AU, new SimpleDateFormat("MM/yy", en_AU), false);
+    I.addCustomDateFormat(TU_MONTH_YEAR, fr, new SimpleDateFormat("MM/yy", fr), false);
+    I.addCustomDateFormat(TU_MONTH_YEAR, de, new SimpleDateFormat("MM.yyyy", de), true);
+  }
 
   @Test
   public void testLanguageSupportTests() {
@@ -517,17 +546,17 @@ public class I18NTests {
   }
 
   @Test
-  public void testTUDateFormat() {
+  public void testCustomDateFormats() {
     Date d = new Date(101, 4, 2);
     I.setLanguage("en");
-    assertEquals("05/02/2001", I.dateToString(d, I.TU_STANDARD_DATE_TYPE));
-    assertEquals("", I.dateToString(null, I.TU_STANDARD_DATE_TYPE));
+    assertEquals("05/02/2001", I.dateToString(d, TU_STANDARD_DATE_TYPE));
+    assertEquals("", I.dateToString(null, TU_STANDARD_DATE_TYPE));
     I.setLanguage("fr_FR");
-    assertEquals("02/05/2001", I.dateToString(d, I.TU_STANDARD_DATE_TYPE));
+    assertEquals("02/05/2001", I.dateToString(d, TU_STANDARD_DATE_TYPE));
     I.setLanguage("de_DE");
-    assertEquals("02.05.2001", I.dateToString(d, I.TU_STANDARD_DATE_TYPE));
+    assertEquals("02.05.2001", I.dateToString(d, TU_STANDARD_DATE_TYPE));
     I.setLanguage("en_AU");
-    assertEquals("02/05/2001", I.dateToString(d, I.TU_STANDARD_DATE_TYPE));
+    assertEquals("02/05/2001", I.dateToString(d, TU_STANDARD_DATE_TYPE));
   }
 
   @Test

@@ -1,4 +1,4 @@
-package com.teamunify.i18n;
+package com.teamunify.i18n.settings;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
  * etc. The latter holds the current translations for all messages. These are stored in thread local variables during
  * request processing.
  * 
- * @see com.teamunify.i18n.ServletLocaleFilter
+ * @see com.teamunify.i18n.webapp.ServletLocaleFilter
  * 
  * @author tonykay
  */
@@ -121,60 +121,9 @@ public final class LanguageSetting {
         return getMediumDateParser();
       case DateFormat.LONG:
         return getLongDateParser();
-      case I.TU_STANDARD_DATE_TYPE:
-        return getTuStandardDateFormat();
       default:
-        return DateFormat.getDateInstance(style, locale);
+        return null;
     }
-  }
-
-  // TeamUnify standard date format: 4 digits year (yyyy)
-  public DateFormat getTuStandardDateFormat() {
-    SimpleDateFormat fm = null;
-
-    if (locale.getCountry().equals("US") || locale.getCountry().equals(""))
-      fm = new SimpleDateFormat("MM/dd/yyyy", locale);
-    else if (locale.getCountry().equals("FR") || locale.getCountry().equals("AU"))
-      fm = new SimpleDateFormat("dd/MM/yyyy", locale);
-    else if (locale.getCountry().equals("DE"))
-      fm = new SimpleDateFormat("dd.MM.yyyy", locale);
-    else
-      fm = getShortDateParser();
-
-    fm.setLenient(true);
-
-    return fm;
-  }
-
-  // TeamUnify standard date format: 2 digits year (yy)
-  public DateFormat getTuStandardDateFormatShort() {
-    SimpleDateFormat fm = null;
-
-    if (locale.getCountry().equals("US") || locale.getCountry().equals(""))
-      fm = new SimpleDateFormat("MM/dd/yy", locale); // format: MM/dd/yyyy
-    else
-      fm = getShortDateParser();
-
-    fm.setLenient(true);
-
-    return fm;
-  }
-
-  // TeamUnify standard date format: no year
-  public DateFormat getTuStandardDateFormatNoYear() {
-    SimpleDateFormat fm = null;
-
-    if (locale.getCountry().equals("FR") || locale.getCountry().equals("AU"))
-      fm = new SimpleDateFormat("dd/MM", locale);
-    else if (locale.getCountry().equals("DE"))
-      fm = new SimpleDateFormat("dd.MM", locale);
-    else
-      // if (locale == Locale.US)
-      fm = new SimpleDateFormat("MM/dd", locale);
-
-    fm.setLenient(true);
-
-    return fm;
   }
 
   public SimpleDateFormat getShortDateParser() {
@@ -195,7 +144,6 @@ public final class LanguageSetting {
     dateParsers[1] = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.MEDIUM, locale);
     dateParsers[2] = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.LONG, locale);
     dateParsers[3] = new SimpleDateFormat("yyyy-MM-dd", locale);
-    dateParsers[4] = (SimpleDateFormat) getTuStandardDateFormat();
     return dateParsers;
   }
 

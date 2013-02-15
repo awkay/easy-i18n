@@ -1,4 +1,4 @@
-package com.teamunify.i18n;
+package com.teamunify.i18n.webapp;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -10,6 +10,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.teamunify.i18n.I;
 
 /**
  * Reads the browser's preferred locale, checks the session, and sets the language based upon it.

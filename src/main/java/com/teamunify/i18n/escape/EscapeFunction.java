@@ -1,4 +1,4 @@
-package com.teamunify.i18n;
+package com.teamunify.i18n.escape;
 
 public interface EscapeFunction {
   public String escape(String s);

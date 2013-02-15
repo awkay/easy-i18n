@@ -1,4 +1,4 @@
-package com.teamunify.i18n;
+package com.teamunify.i18n.wiki;
 
 /**
  * Defines an interface for objects that can turn wiki markup into your desired output (e.g. HTML)

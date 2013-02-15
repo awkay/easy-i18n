@@ -1,4 +1,4 @@
-package com.teamunify.i18n;
+package com.teamunify.i18n.wiki;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

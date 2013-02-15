@@ -1,4 +1,6 @@
-package com.teamunify.i18n;
+package com.teamunify.i18n.settings;
+
+import com.teamunify.i18n.I;
 
 /**
  * Thread local variable for holding the current request thread's language preferences, so we can more succinctly call

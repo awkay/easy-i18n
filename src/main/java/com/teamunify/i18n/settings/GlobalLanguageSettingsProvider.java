@@ -1,4 +1,4 @@
-package com.teamunify.i18n;
+package com.teamunify.i18n.settings;
 
 import java.util.Locale;
 
