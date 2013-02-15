@@ -1,6 +1,5 @@
 package com.teamunify.i18n;
 
-import static org.apache.commons.lang.StringEscapeUtils.escapeHtml;
 import static org.apache.commons.lang.StringEscapeUtils.escapeJavaScript;
 import gnu.gettext.GettextResource;
 import java.math.BigDecimal;
@@ -141,7 +140,8 @@ public final class I {
    * @return The translated string, or msg if there is none.
    */
   public static String tr(String msg) {
-    return escapeHtml(tru(msg));
+    // FIXME: generalize escape mechanism
+    return escape(tru(msg));
   }
 
   /**
@@ -195,7 +195,7 @@ public final class I {
    */
   public static String trc(String context, String msg) {
     LanguageSetting s = currentLanguage.get();
-    return escapeHtml(GettextResource.pgettext(s.translation, context, msg));
+    return escape(GettextResource.pgettext(s.translation, context, msg));
   }
 
   /**
@@ -250,7 +250,7 @@ public final class I {
    * @see java.text.MessageFormat
    */
   public static String trf(String msg, Object... args) {
-    return escapeHtml(trfu(msg, args));
+    return escape(trfu(msg, args));
   }
 
   /**
@@ -294,7 +294,7 @@ public final class I {
     LanguageSetting s = currentLanguage.get();
     String xlation = GettextResource.pgettext(s.translation, context, msg);
     s.formatter.applyPattern(xlation);
-    return escapeHtml(s.formatter.format(args));
+    return escape(s.formatter.format(args));
   }
 
   /**
@@ -328,7 +328,11 @@ public final class I {
     LanguageSetting s = currentLanguage.get();
     String xlation = GettextResource.ngettext(s.translation, singular, plural, nitems_for_plural_determination);
     s.formatter.applyPattern(xlation);
-    return wikified(escapeHtml(s.formatter.format(args)));
+    return escape(s.formatter.format(args));
+  }
+
+  public static String tr_pluralw(String singular, String plural, int nitems_for_plural_determination, Object... args) {
+    return wikified(tr_plural(singular, plural, nitems_for_plural_determination, args));
   }
 
   /**
@@ -350,6 +354,7 @@ public final class I {
     final String countryOnly = name != null && name.contains("_") ? name.substring(3) : "US";
     LanguageSetting setting = new LanguageSetting(new Locale(langOnly, countryOnly));
     log.info("setting language bundle to " + setting.translation.getClass().getName());
+    // FIXME: Convert to settings provider
     currentLanguage.set(setting);
   }
 
@@ -401,52 +406,6 @@ public final class I {
    */
   public static boolean supports(String lang, String country) {
     return supports(new Locale(lang, country));
-  }
-
-  private static Pattern boldPattern = Pattern.compile("\\*\\*([^*/_]*)\\*\\*");
-  private static Pattern italicPattern = Pattern.compile("//([^/*_]*)//");
-  private static Pattern underlinePattern = Pattern.compile("__([^*/_]*)__");
-  private static Pattern linebreak = Pattern.compile("_br_");
-  private static Pattern redfont = Pattern.compile("_r_([^*/_]*)_r_");
-  private static Pattern linkPattern = Pattern.compile("\\[\\[([^|]*)\\|([^]]*)\\]\\]");
-
-  /**
-   * Convert wiki markup into HTML markup.
-   * 
-   * The wiki support in this class honors:
-   * 
-   * <ul>
-   * <li>bold (surround with **)
-   * <li>italics (surround with //)
-   * <li>underline (surround with __)
-   * <li>linebreak (_br_)
-   * <li>links ([[URL|text]]).
-   * </ul>
-   * 
-   * @param msg
-   *          The message with wiki markup
-   * @return The HTML form of the markup.
-   */
-  public static String wikified(String msg) {
-    Matcher m = boldPattern.matcher(msg);
-    if (m.find())
-      msg = m.replaceAll("<b>$1</b>");
-    m = italicPattern.matcher(msg);
-    if (m.find())
-      msg = m.replaceAll("<i>$1</i>");
-    m = underlinePattern.matcher(msg);
-    if (m.find())
-      msg = m.replaceAll("<u>$1</u>");
-    m = redfont.matcher(msg);
-    if (m.find())
-      msg = m.replaceAll("<font color=red>$1</font>");
-    m = linebreak.matcher(msg);
-    if (m.find())
-      msg = m.replaceAll("<br>");
-    m = linkPattern.matcher(msg);
-    if (m.find())
-      msg = m.replaceAll("<a href=\"$1\">$2</a>");
-    return msg;
   }
 
   /**
@@ -760,7 +719,7 @@ public final class I {
     }
     rv = d.format(damount.doubleValue());
     rv.replace((char) 160, ' ');
-    return escapeHtml(rv);
+    return escape(rv);
   }
 
   /**
@@ -1520,5 +1479,50 @@ public final class I {
 
   public static void setDefaultDate(Date defaultDate) {
     I.defaultDate = defaultDate;
+  }
+
+  /**
+   * Set the escape function used by most translation functions. Defaults to HTMLEscapeFunction
+   * 
+   * <p>
+   * NOTE: This is a global setting that affects all thread at all times.
+   * 
+   * @param f
+   */
+  public static void setEscapeFunction(EscapeFunction f) {
+    escapeFunction = f;
+  }
+
+  private static EscapeFunction escapeFunction = new HTMLEscapeFunction();
+
+  protected static String escape(String s) {
+    return escapeFunction.escape(s);
+  }
+
+  private static Wikifier wikiEngine = new SimpleWikifier();
+
+  public static Wikifier getWikiEngine() {
+    return wikiEngine;
+  }
+
+  /**
+   * Set the wiki support engine. Can be set to null to disable support. Defaults to SimpleWikifier.
+   * 
+   * @param wikiEngine
+   */
+  public static void setWikiEngine(Wikifier wikiEngine) {
+    I.wikiEngine = wikiEngine;
+  }
+
+  /**
+   * Run the given string through the current Wiki Engine. Use setWikiEngine to change (globally).
+   * 
+   * @param s
+   * @return
+   */
+  public static String wikified(String s) {
+    if (wikiEngine == null)
+      return s;
+    return wikiEngine.wikified(s);
   }
 }
