@@ -19,27 +19,17 @@ public class I18NTests {
    * This is a custom date format ID.
    */
   public static final int TU_STANDARD_DATE_TYPE = 100;
-  public static final int TU_MONTH_YEAR = 101;
 
   private static final Date myNullDate = new Date(30, 0, 0);
   private static final Date nulldatePlusSome = new Date(myNullDate.getTime() + 103295);
 
   @BeforeClass
   public static void setup() {
-    Locale en_US = new Locale("en", "US");
-    Locale en_AU = new Locale("en", "AU");
-    Locale fr = new Locale("fr");
-    Locale de = new Locale("de");
-    
-    I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, en_US, new SimpleDateFormat("MM/dd/yyyy", en_US), true);
-    I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, en_AU, new SimpleDateFormat("dd/MM/yyyy", en_AU), true);
-    I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, fr, new SimpleDateFormat("dd/MM/yyyy", fr), true);
-    I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, de, new SimpleDateFormat("dd.MM.yyyy", de), true);
-    
-    I.addCustomDateFormat(TU_MONTH_YEAR, en_US, new SimpleDateFormat("MM/yy", en_US), false);
-    I.addCustomDateFormat(TU_MONTH_YEAR, en_AU, new SimpleDateFormat("MM/yy", en_AU), false);
-    I.addCustomDateFormat(TU_MONTH_YEAR, fr, new SimpleDateFormat("MM/yy", fr), false);
-    I.addCustomDateFormat(TU_MONTH_YEAR, de, new SimpleDateFormat("MM.yyyy", de), true);
+    assertTrue(I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "en","", "MM/dd/yyyy", true));
+    assertTrue(I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "en", "US", "MM/dd/yyyy", true));
+    assertTrue(I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "en", "AU", "dd/MM/yyyy", true));
+    assertTrue(I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "fr", "", "dd/MM/yyyy", true));
+    assertTrue(I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "de", "", "dd.MM.yyyy", true));
   }
 
   @Test

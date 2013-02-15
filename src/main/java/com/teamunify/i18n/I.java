@@ -392,14 +392,17 @@ public final class I {
    * @param d
    *          The date to format
    * @param style
-   *          One of DateFormat formats (e.g. SHORT/LONG/MEDIUM) or DEFAULT.
+   *          One of DateFormat formats (e.g. SHORT/LONG/MEDIUM)
    * @return the locale-corrected string version of the date.
    */
   public static String dateToString(Date d, int style) {
     if (isNullDate(d))
       return "";
     LanguageSetting s = languageProvider.vend();
-    return s.formatterFor(style).format(d);
+    DateFormat formatter = s.formatterFor(style);
+    if (formatter == null)
+      formatter = dateFormatVendor.getFormatFor(style, s.locale, DateFormat.LONG);
+    return formatter.format(d);
   }
 
   /**
@@ -1477,15 +1480,20 @@ public final class I {
    * 
    * @param formatID
    *          Your custom format ID. MUST be greater than 10.
-   * @param l
-   *          The locale on which to apply it
-   * @param format
-   *          The format itself
-   * @param allowedOnInput
-   *          Should this format be used as acceptable input parsing
+   * @param lang
+   *          The two-letter language
+   * @param country
+   *          The two-letter country
+   * @param spec
+   *          An acceptable SimpleDateFormat specification for format
+   * @param allowOnInput
+   *          True if you want users to be able to use this format for input of dates
    * @return True if registration was successful, false if there was a formatID collision (you already set it).
    */
-  public static boolean addCustomDateFormat(int formatID, Locale l, DateFormat format, boolean allowedOnInput) {
+  public static boolean addCustomDateFormat(int formatID, String lang, String country, String dateFormatSpec,
+    boolean allowedOnInput) {
+    Locale l = new Locale(lang, country);
+    SimpleDateFormat format = new SimpleDateFormat(dateFormatSpec, l);
     format.setLenient(true);
     boolean ok = dateFormatVendor.registerFormat(formatID, l, format);
     if (ok && allowedOnInput)

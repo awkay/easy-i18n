@@ -55,7 +55,7 @@ final public class CustomDateFormatVendor {
    */
   public boolean registerFormat(int formatID, Locale l, DateFormat fmt) {
     DFKey key = new DFKey(formatID, l);
-    return registry.putIfAbsent(key, fmt) == fmt;
+    return registry.putIfAbsent(key, fmt) == null;
   }
 
   /**
