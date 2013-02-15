@@ -10,8 +10,8 @@ import static org.apache.commons.lang.StringEscapeUtils.unescapeHtml;
 
 @SuppressWarnings("deprecation")
 public class I18NTests {
-  // TODO: deal with null dates: 
-  // private static final Date nulldate = new Date(Util.MyUtil.NULL_DATE.getTime() + 103295);
+  private static final Date myNullDate = new Date(30, 0, 0);
+  private static final Date nulldatePlusSome = new Date(myNullDate.getTime() + 103295);
 
   @Test
   public void testLanguageSupportTests() {
@@ -131,6 +131,24 @@ public class I18NTests {
     assertEquals(desired, result);
   }
 
+  public void setupNullDate() {
+    I.setNullDateTest(new BooleanFunction<Date>() {
+      public boolean apply(Date obj) {
+        return obj == null || (obj.getYear() == myNullDate.getYear());
+      }
+    });
+    I.setDefaultDate(myNullDate);
+  }
+
+  public void restoreNullDate() {
+    I.setNullDateTest(new BooleanFunction<Date>() {
+      public boolean apply(Date obj) {
+        return obj == null;
+      }
+    });
+    I.setDefaultDate(null);
+  }
+
   @Test
   public void testDateOutput() {
     final Date d = new Date(99, 0, 3);
@@ -139,9 +157,13 @@ public class I18NTests {
     assertEquals("1/3/99", I.dateToString(d, DateFormat.SHORT));
     assertEquals("Jan 3, 1999", I.dateToString(d, DateFormat.MEDIUM));
     assertEquals("January 3, 1999", I.dateToString(d, DateFormat.LONG));
-    // TODO: assertEquals("", I.dateToString(nulldate, DateFormat.SHORT));
-    //assertEquals("", I.dateToString(nulldate, DateFormat.MEDIUM));
-    //assertEquals("", I.dateToString(nulldate, DateFormat.LONG));
+    assertNotSame("", I.dateToString(nulldatePlusSome, DateFormat.SHORT));
+    assertNotSame("", I.dateToString(nulldatePlusSome, DateFormat.MEDIUM));
+    assertNotSame("", I.dateToString(nulldatePlusSome, DateFormat.LONG));
+    setupNullDate();
+    assertEquals("", I.dateToString(nulldatePlusSome, DateFormat.SHORT));
+    assertEquals("", I.dateToString(nulldatePlusSome, DateFormat.MEDIUM));
+    assertEquals("", I.dateToString(nulldatePlusSome, DateFormat.LONG));
     assertEquals("", I.dateToString(null, DateFormat.SHORT));
     assertEquals("", I.dateToString(null, DateFormat.MEDIUM));
     assertEquals("", I.dateToString(null, DateFormat.LONG));
@@ -149,6 +171,7 @@ public class I18NTests {
     assertEquals("03/01/99", I.dateToString(d, DateFormat.SHORT));
     assertEquals("3 janv. 1999", I.dateToString(d, DateFormat.MEDIUM));
     assertEquals("3 janvier 1999", I.dateToString(d, DateFormat.LONG));
+    restoreNullDate();
   }
 
   @Test
@@ -164,8 +187,12 @@ public class I18NTests {
   public void testLocaleDateInput() {
     final Date d = new Date(103, 0, 3);
 
-    //TODO: assertEquals(MyUtil.NULL_DATE, I.stringToDate(null));
-    //assertEquals(MyUtil.NULL_DATE, I.stringToDate(""));
+    assertEquals(null, I.stringToDate(null));
+    assertEquals(null, I.stringToDate(""));
+    setupNullDate();
+    assertEquals(myNullDate, I.stringToDate(null));
+    assertEquals(myNullDate, I.stringToDate(""));
+    restoreNullDate();
 
     I.setLanguage("en");
     assertEquals(d, I.stringToDate("1/3/03"));
@@ -494,7 +521,6 @@ public class I18NTests {
     Date d = new Date(101, 4, 2);
     I.setLanguage("en");
     assertEquals("05/02/2001", I.dateToString(d, I.TU_STANDARD_DATE_TYPE));
-    // TODO: assertEquals("", I.dateToString(nulldate, I.TU_STANDARD_DATE_TYPE));
     assertEquals("", I.dateToString(null, I.TU_STANDARD_DATE_TYPE));
     I.setLanguage("fr_FR");
     assertEquals("02/05/2001", I.dateToString(d, I.TU_STANDARD_DATE_TYPE));
