@@ -15,10 +15,10 @@ import java.util.Currency;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The central translation facility. Use the static methods like tr() to translate messages.
@@ -85,7 +85,7 @@ public final class I {
     }
   };
   private static Date defaultDate = null;
-  private static Logger log = Logger.getLogger(I.class.getName());
+  private static Logger log = LoggerFactory.getLogger(I.class);
   private static ThreadLocalLanguageSetting currentLanguage = new ThreadLocalLanguageSetting();
 
   /**
@@ -336,24 +336,22 @@ public final class I {
   }
 
   /**
-   * Set the current language. In the webapp, this is done via the ServletLocaleFilter. In other places (e.g. cron
-   * jobs), you will likely need to set this at the beginning of any thread.
+   * Set the current language. In a webapp, this is typically done via the ServletLocaleFilter. In other places (e.g.
+   * applications, cron jobs, etc.), you will likely need to set this in main.
    * 
-   * <p>
-   * If a session is passed, it will remember the selected language in the session under the "lang" key.
-   * 
-   * @param session
-   *          The current session object. Can be null if you are not running in a webapp.
    * @param name
    *          The language code (two letters, followed by optional _ and two-letter country). E.g. en es de en_US en_AU.
    *          IF YOU DROP THE COUNTRY, IT WILL DEFAULT TO US.
-   * @see ServletLocaleFilter
    */
   public static void setLanguage(String name) {
     final String langOnly = name != null && name.contains("_") ? name.substring(0, 2) : name;
     final String countryOnly = name != null && name.contains("_") ? name.substring(3) : "US";
-    LanguageSetting setting = new LanguageSetting(new Locale(langOnly, countryOnly));
-    log.info("setting language bundle to " + setting.translation.getClass().getName());
+    setLanguage(new Locale(langOnly, countryOnly));
+  }
+
+  public static void setLanguage(Locale l) {
+    LanguageSetting setting = new LanguageSetting(l);
+    log.debug("setting language bundle to " + setting.translation.getClass().getName());
     // FIXME: Convert to settings provider
     currentLanguage.set(setting);
   }
@@ -512,10 +510,9 @@ public final class I {
         e = e1;
       }
     }
-    if (log.isLoggable(Level.FINEST))
-      log.log(Level.FINEST,
-              String.format("Failed to parse date >%s< when using language settings for %s", source,
-                            s.locale.getLanguage()), e);
+    if (log.isDebugEnabled())
+      log.debug(String.format("Failed to parse date >%s< when using language settings for %s", source,
+                              s.locale.getLanguage()), e);
     return rv;
   }
 
@@ -807,8 +804,7 @@ public final class I {
         amount = amount.replace(" ", "\u00a0");
       return fmt.parse(amount);
     } catch (ParseException e) {
-      if (log.isLoggable(Level.FINEST))
-        log.log(Level.FINEST, "Failed to parse currency: " + amount, e);
+      log.debug("Failed to parse currency: " + amount, e);
     }
     return defaultValue;
   }
@@ -877,7 +873,7 @@ public final class I {
       value = value.replace(" ", "");
       return fmt.parse(value);
     } catch (ParseException e) {
-      log.log(Level.SEVERE, "Failed to parse number: " + value, e);
+      log.debug("Failed to parse number: " + value, e);
     }
     return defaultValue;
   }
@@ -1338,8 +1334,7 @@ public final class I {
       SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S", Locale.ENGLISH);
       return df.parse(iso);
     } catch (Exception e) {
-      if (log.isLoggable(Level.FINEST))
-        log.log(Level.FINEST, "Unable to parse date: " + iso, e);
+      log.debug("Unable to parse date: " + iso, e);
     }
     return defaultValue;
   }

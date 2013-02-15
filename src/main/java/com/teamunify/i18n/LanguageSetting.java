@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This stores the pair of Locale and ResourceBundle. The former is needed by message format to format currency, dates,
@@ -23,7 +23,7 @@ import java.util.logging.Logger;
  * @author tonykay
  */
 public final class LanguageSetting {
-  private static Logger log = Logger.getLogger(LanguageSetting.class.getName());
+  private static Logger log = LoggerFactory.getLogger(LanguageSetting.class);
   public static String translationPackage = "com.teamunify.i18n";
   public static final ResourceBundle emptyLanguageBundle = new ResourceBundle() {
     @Override
@@ -33,7 +33,12 @@ public final class LanguageSetting {
 
     @Override
     protected Object handleGetObject(String key) {
-      return null;
+      return key;
+    }
+    
+    @Override
+    public String toString() { 
+      return "EmptyBundle";
     }
   };
 
@@ -52,7 +57,7 @@ public final class LanguageSetting {
     try {
       return (ResourceBundle) Class.forName(fqcn).newInstance();
     } catch (Exception e) {
-      log.log(Level.SEVERE, String.format("Could not find resource bundle for requested locale: %s", fqcn), e);
+      log.warn(String.format("Could not find resource bundle: %s.", fqcn));
     }
     return null;
   }
@@ -76,8 +81,8 @@ public final class LanguageSetting {
     ResourceBundle rv = translations.get(key);
 
     if (rv != null) {
-      if (log.isLoggable(Level.FINER))
-        log.finer(String.format("Using preloaded %s for %s", rv.getClass().getSimpleName(), key));
+      if (log.isDebugEnabled())
+        log.debug(String.format("Using preloaded %s for %s", rv.getClass().getSimpleName(), key));
       return rv;
     }
 
@@ -94,8 +99,8 @@ public final class LanguageSetting {
       rv = emptyLanguageBundle;
     } finally {
       if (rv != null) {
-        if (log.isLoggable(Level.FINER))
-          log.log(Level.FINER, String.format("Saving bundle %s for %s", rv.getClass().getSimpleName(), key));
+        if (log.isDebugEnabled())
+          log.debug(String.format("Saving bundle %s for %s", rv.getClass().getSimpleName(), key));
         translations.put(key, rv);
       }
     }

@@ -1,14 +1,15 @@
 package com.teamunify.i18n;
 
 import java.io.IOException;
-import java.util.logging.Logger;
+import java.util.Locale;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Reads the browser's preferred locale, checks the session, and sets the language based upon it.
@@ -18,7 +19,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author tonykay
  */
 public abstract class ServletLocaleFilter implements Filter {
-  private static Logger log = Logger.getLogger(ServletLocaleFilter.class.getName());
+  private static Logger log = LoggerFactory.getLogger(ServletLocaleFilter.class);
   public void destroy() {}
 
   /**
@@ -37,19 +38,17 @@ public abstract class ServletLocaleFilter implements Filter {
    * @param req
    * @return
    */
-  public abstract String getLocale(ServletRequest req);
+  public abstract Locale getLocale(ServletRequest req);
   
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
                                                                                            ServletException {
-    String lang = getLocale(request);
-    if (lang.isEmpty())
-      lang = getDefaultLocale();
-    if (!I.supports(lang)) {
-      log.warning("Request for unsupported language " + lang);
-      lang = getDefaultLocale();
-    }
+    Locale l = getLocale(request);
+    if (l == null)
+      l = Locale.getDefault();
+    if (!I.supports(l))
+      log.warn("Request for unsupported locale " + l);
 
-    I.setLanguage(lang); //set current thread & session for the requests
+    I.setLanguage(l); //set current thread & session for the requests
     chain.doFilter(request, response); // Do actual request
   }
 

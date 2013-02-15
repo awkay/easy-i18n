@@ -20,7 +20,7 @@ public class S {
 
   /**
    * Surround the given value with double-quotes. If the value contains a double-quote, it will be escaped in a manner
-   * compatible with JavaScript. E.g. "Tony" becomes "\"Tony\"".
+   * compatible with Java/JavaScript. E.g. "Tony" becomes "\"Tony\"".
    * 
    * @param value
    *          The value to quote
