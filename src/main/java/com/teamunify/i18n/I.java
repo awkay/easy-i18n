@@ -86,7 +86,7 @@ public final class I {
   };
   private static Date defaultDate = null;
   private static Logger log = LoggerFactory.getLogger(I.class);
-  private static ThreadLocalLanguageSetting currentLanguage = new ThreadLocalLanguageSetting();
+  private static LanguageSettingsProvider languageProvider =  new ThreadLocalLanguageSettingsProvider();
 
   /**
    * This is a custom date format. Please use DateFormat.SHORT/MEDIUM/LONG for other formats, which are locale
@@ -103,7 +103,7 @@ public final class I {
    * @see java.text.DateFormat
    */
   public static DateFormat getTuStandardDateFormat() {
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     return s.getTuStandardDateFormat();
   }
 
@@ -115,7 +115,7 @@ public final class I {
    * @see java.text.DateFormat
    */
   public static DateFormat getTuStandardDateFormatShort() {
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     return s.getTuStandardDateFormatShort();
   }
 
@@ -127,7 +127,7 @@ public final class I {
    * @see java.text.DateFormat
    */
   public static DateFormat getTuStandardDateFormatNoYear() {
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     return s.getTuStandardDateFormatNoYear();
   }
 
@@ -153,7 +153,7 @@ public final class I {
    * @return The translated string.
    */
   public static String tru(String msg) {
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     return GettextResource.gettext(s.translation, msg);
   }
 
@@ -194,7 +194,7 @@ public final class I {
    * @return The translated message, or msg if there is none.
    */
   public static String trc(String context, String msg) {
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     return escape(GettextResource.pgettext(s.translation, context, msg));
   }
 
@@ -261,7 +261,7 @@ public final class I {
    * @return
    */
   public static String trfu(String msg, Object... args) {
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     String xlation = GettextResource.gettext(s.translation, msg);
     s.formatter.applyPattern(xlation);
     return s.formatter.format(args);
@@ -291,7 +291,7 @@ public final class I {
    * @see I#trf(String,Object...)
    */
   public static String trcf(String context, String msg, Object... args) {
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     String xlation = GettextResource.pgettext(s.translation, context, msg);
     s.formatter.applyPattern(xlation);
     return escape(s.formatter.format(args));
@@ -325,7 +325,7 @@ public final class I {
    * @see I#wikified
    */
   public static String tr_plural(String singular, String plural, int nitems_for_plural_determination, Object... args) {
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     String xlation = GettextResource.ngettext(s.translation, singular, plural, nitems_for_plural_determination);
     s.formatter.applyPattern(xlation);
     return escape(s.formatter.format(args));
@@ -350,10 +350,7 @@ public final class I {
   }
 
   public static void setLanguage(Locale l) {
-    LanguageSetting setting = new LanguageSetting(l);
-    log.debug("setting language bundle to " + setting.translation.getClass().getName());
-    // FIXME: Convert to settings provider
-    currentLanguage.set(setting);
+    languageProvider.setLocale(l);
   }
 
   /**
@@ -369,7 +366,7 @@ public final class I {
   }
 
   public static LanguageSetting getCurrentLanguage() {
-    return currentLanguage.get();
+    return languageProvider.vend();
   }
 
   /**
@@ -418,7 +415,7 @@ public final class I {
   public static String dateToString(Date d, int style) {
     if (isNullDate(d))
       return "";
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     return s.formatterFor(style).format(d);
   }
 
@@ -471,7 +468,7 @@ public final class I {
   public static String timestampToString(Date d, boolean timeOnly, boolean showSeconds, boolean showTimezone) {
     if (isNullDate(d))
       return "";
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     String strTime =
       (showSeconds ? s.getLongTimeFormat().format(d) : s.getShortTimeFormat().format(d))
           + (showTimezone ? " " + getTimeZone().getDisplayName(getTimeZone().inDaylightTime(d), TimeZone.SHORT) : "");
@@ -501,7 +498,7 @@ public final class I {
     if (source == null || source.isEmpty())
       return rv;
     ParseException e = null;
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     for (SimpleDateFormat fmt : s.getDateParsers()) {
       try {
         rv = fmt.parse(source);
@@ -567,7 +564,7 @@ public final class I {
   public static Date stringToTime(Date refDate, String timeString) {
     Date timeDate = new Date(0, 0, 0, 0, 0, 0);
 
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     for (DateFormat fmt : new DateFormat[] { s.getLongTimeFormat(), s.getShortTimeFormat(),
       s.getMilitaryTimeFormat(true), s.getMilitaryTimeFormat(false) }) {
       try {
@@ -621,7 +618,7 @@ public final class I {
    * @return The format string, for helping the user understand input
    */
   public static Object preferredDateFormat() {
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     return s.getShortDateParser().toPattern();
   }
 
@@ -669,7 +666,7 @@ public final class I {
    * @return The number of floating point digits.
    */
   public static int getFractionDigits() {
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     Currency c = Currency.getInstance(s.locale);
     int scale = c.getDefaultFractionDigits();
     return scale;
@@ -698,7 +695,7 @@ public final class I {
    * @return The currency string.
    */
   public static String numberToCurrencyString(Number damount, boolean bCurrencySign) {
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     String rv = "";
     DecimalFormat d = (DecimalFormat) NumberFormat.getCurrencyInstance(s.locale);
     if (damount.doubleValue() < 0) {
@@ -781,7 +778,7 @@ public final class I {
   public static Number currencyStringToNumber(String amount, Number defaultValue) {
     if (amount == null || amount.isEmpty())
       return defaultValue;
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     NumberFormat fmt = NumberFormat.getCurrencyInstance(s.locale);
     try {
       DecimalFormat d = (DecimalFormat) fmt;
@@ -822,7 +819,7 @@ public final class I {
    * @return A String of the form #,###.##
    */
   public static String preferredCurrencyFormat() {
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     NumberFormat fmt = NumberFormat.getCurrencyInstance(s.locale);
     StringBuffer rv = new StringBuffer();
     if (fmt instanceof DecimalFormat) {
@@ -867,7 +864,7 @@ public final class I {
   public static Number stringToNumber(String value, Number defaultValue) {
     if (value == null || value.isEmpty())
       return defaultValue;
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     NumberFormat fmt = NumberFormat.getInstance(s.locale);
     try {
       value = value.replace(" ", "");
@@ -889,7 +886,7 @@ public final class I {
    * @see I#preferredCurrencyFormat()
    */
   public static String preferredNumberFormat(int nFractional) {
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     NumberFormat fmt = NumberFormat.getInstance(s.locale);
     StringBuffer rv = new StringBuffer();
     if (fmt instanceof DecimalFormat) {
@@ -929,7 +926,7 @@ public final class I {
   public static String numberToString(Number d) {
     if (d == null)
       return "0";
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     NumberFormat fmt = NumberFormat.getInstance(s.locale);
     return fmt.format(d).replace("\u00a0", " ");
   }
@@ -940,7 +937,7 @@ public final class I {
    * @return A string containing the currency symbol in the current locale.
    */
   public static String currencySign() {
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     NumberFormat fmt = NumberFormat.getCurrencyInstance(s.locale);
     DecimalFormat d = (DecimalFormat) fmt;
     return d.getDecimalFormatSymbols().getCurrencySymbol();
@@ -969,7 +966,7 @@ public final class I {
    * @return A string with the locale inserted (e.g. x_fr.png)
    */
   public static String imageURL(String url) {
-    if (currentLanguage.get().locale.getLanguage().equals("en") || url == null || url.length() == 0)
+    if (languageProvider.vend().locale.getLanguage().equals("en") || url == null || url.length() == 0)
       return url;
 
     int iIdx = url.lastIndexOf(".");
@@ -977,7 +974,7 @@ public final class I {
     if (iIdx == -1)
       return url;
     else
-      return url.substring(0, iIdx) + "_" + currentLanguage.get().locale.getLanguage() + url.substring(iIdx);
+      return url.substring(0, iIdx) + "_" + languageProvider.vend().locale.getLanguage() + url.substring(iIdx);
   }
 
   /**
@@ -1025,7 +1022,7 @@ public final class I {
    * @return The string for your locale that represents the percentage form.
    */
   public static String fractionalNumberToPercentage(Number n) {
-    Locale l = I.currentLanguage.get().locale;
+    Locale l = I.languageProvider.vend().locale;
     NumberFormat fmt = NumberFormat.getPercentInstance(l);
     fmt.setMaximumFractionDigits(2);
     fmt.setMinimumFractionDigits(0);
@@ -1106,7 +1103,7 @@ public final class I {
    * @return The compacted currency string
    */
   public static String compressCurrencyString(String str) {
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     DecimalFormat d = (DecimalFormat) NumberFormat.getCurrencyInstance(s.locale);
     Character c = d.getDecimalFormatSymbols().getGroupingSeparator();
     str = str.replaceAll("\\Q" + c.toString() + "\\E", "");
@@ -1129,7 +1126,7 @@ public final class I {
    * @return The compacted string
    */
   public static String compressNumberString(String str) {
-    LanguageSetting s = currentLanguage.get();
+    LanguageSetting s = languageProvider.vend();
     DecimalFormat d = (DecimalFormat) NumberFormat.getNumberInstance(s.locale);
     Character c = d.getDecimalFormatSymbols().getGroupingSeparator();
     str = str.replaceAll("\\Q" + c.toString() + "\\E", "");
@@ -1188,7 +1185,7 @@ public final class I {
    * @return languagne, for instance, en, fr, de, ...
    */
   public static String getLanguage() {
-    return currentLanguage.get().locale.getLanguage();
+    return languageProvider.vend().locale.getLanguage();
   }
 
   /**
@@ -1519,5 +1516,9 @@ public final class I {
     if (wikiEngine == null)
       return s;
     return wikiEngine.wikified(s);
+  }
+
+  public static synchronized void setLanguageSettingsProvider(LanguageSettingsProvider p) {
+    languageProvider = p;
   }
 }
