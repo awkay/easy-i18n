@@ -4,3 +4,5 @@ target
 .project
 .classpath
 .settings
+settings.xml
+*.asc

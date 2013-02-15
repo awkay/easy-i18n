@@ -1,0 +1,19 @@
+version=$(grep -i '<version>' pom.xml | head -n 1 | sed -e 's/^.*\>\([^<]*\)\<.*$/\1/')
+echo $version
+if [[ $version =~ 'SNAPSHOT' ]]; then
+   echo "Cannot stage a SNAPSHOT. Use mvn deploy instead"
+   exit 1
+fi
+
+ACTION=gpg:sign-and-deploy-file 
+SERVER=-Durl=https://oss.sonatype.org/service/local/staging/deploy/maven2/
+REPO=-DrepositoryId=sonatype-nexus-staging
+POM=-DpomFile=pom.xml
+FBASE=-Dfile=target/easy-i18n-$version
+SRCCL=-Dclassifier=sources
+JDCL=-Dclassifier=javadoc
+PROFILE=-Pgpg
+
+mvn $ACTION $SERVER $REPO $POM ${FBASE}.jar $PROFILE
+mvn $ACTION $SERVER $REPO $POM ${FBASE}-sources.jar $SRCCL $PROFILE
+mvn $ACTION $SERVER $REPO $POM ${FBASE}-javadoc.jar $JDCL $PROFILE
