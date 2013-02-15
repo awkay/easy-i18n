@@ -30,6 +30,11 @@ public class I18NTests {
     assertTrue(I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "en", "AU", "dd/MM/yyyy", true));
     assertTrue(I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "fr", "", "dd/MM/yyyy", true));
     assertTrue(I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "de", "", "dd.MM.yyyy", true));
+    
+    //assertTrue(I.setDefaultDateFormat("en", "", "MM/dd/yyyy"));
+    //assertTrue(I.setDefaultDateFormat("en", "AU", "dd/MM/yyyy"));
+    //assertTrue(I.setDefaultDateFormat("fr", "", "dd/MM/yyyy"));
+    //assertTrue(I.setDefaultDateFormat("de", "", "dd.MM.yyyy"));
   }
 
   @Test

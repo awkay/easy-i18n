@@ -401,7 +401,7 @@ public final class I {
     LanguageSetting s = languageProvider.vend();
     DateFormat formatter = s.formatterFor(style);
     if (formatter == null)
-      formatter = dateFormatVendor.getFormatFor(style, s.locale, DateFormat.LONG);
+      formatter = dateFormatVendor.getFormatFor(style, s.locale, DateFormat.SHORT);
     return formatter.format(d);
   }
 
@@ -416,7 +416,7 @@ public final class I {
     if (isNullDate(d))
       return "";
     else
-      return dateToString(d, DateFormat.SHORT);
+      return dateToString(d, DEFAULT_DATE_FORMAT_ID);
   }
 
   /**
@@ -430,11 +430,11 @@ public final class I {
     if (isNullDate(d))
       return "";
     else
-      return timestampToString(d, DateFormat.SHORT, false, true);
+      return timestampToString(d, DEFAULT_DATE_FORMAT_ID, false, true);
   }
 
   public static String timestampToString(Date d, boolean timeOnly, boolean showSeconds) {
-    return timestampToString(d, DateFormat.SHORT, timeOnly, showSeconds, false);
+    return timestampToString(d, DEFAULT_DATE_FORMAT_ID, timeOnly, showSeconds, false);
   }
 
   public static String timestampToString(Date d, int fmtID, boolean timeOnly, boolean showSeconds) {
@@ -442,7 +442,7 @@ public final class I {
   }
 
   public static String timestampToString(Date d, boolean timeOnly, boolean showSeconds, boolean showTimezone) {
-    return timestampToString(d, DateFormat.SHORT, timeOnly, showSeconds, showTimezone);
+    return timestampToString(d, DEFAULT_DATE_FORMAT_ID, timeOnly, showSeconds, showTimezone);
   }
 
   public static String timestampToString(Date d, int dateFmtID, boolean timeOnly, boolean showSeconds,
@@ -1499,5 +1499,16 @@ public final class I {
     if (ok && allowedOnInput)
       dateFormatVendor.registerInputFormat(l, format);
     return ok;
+  }
+
+  /**
+   * Set the default Date Format to use in methods that do not require an explicit style.
+   */
+  public static final int DEFAULT_DATE_FORMAT_ID = 9;
+  public static boolean setDefaultDateFormat(String lang, String country, String spec) {
+    Locale l = new Locale(lang, country);
+    SimpleDateFormat format = new SimpleDateFormat(spec, l);
+    format.setLenient(true);
+    return dateFormatVendor.registerFormat(DEFAULT_DATE_FORMAT_ID, l, format);
   }
 }

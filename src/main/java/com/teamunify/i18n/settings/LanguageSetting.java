@@ -33,7 +33,7 @@ public final class LanguageSetting {
 
     @Override
     protected Object handleGetObject(String key) {
-      return key;
+      return null;
     }
     
     @Override

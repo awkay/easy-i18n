@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
+import com.teamunify.i18n.I;
 
 /**
  * A class on which you can register custom date formats.
@@ -57,7 +58,7 @@ final public class CustomDateFormatVendor {
     DFKey key = new DFKey(formatID, l);
     return registry.putIfAbsent(key, fmt) == null;
   }
-
+  
   /**
    * Remove a registered format from the vendor.
    * 
@@ -104,12 +105,12 @@ class DFKey {
   private String localeName;
 
   public DFKey(int formatID, Locale l) {
-    if (formatID < 10)
+    if (formatID < I.DEFAULT_DATE_FORMAT_ID)
       throw new IllegalArgumentException("Custom date format IDs must be > 10");
     this.formatID = formatID;
     this.localeName = l.toString();
   }
-
+  
   private DFKey(int formatID, String lname) {
     this.formatID = formatID;
     this.localeName = lname;
