@@ -36,3 +36,10 @@ Need to have ~/.m2/settings.xml with:
     </profile>
   </profiles>
 </settings>
+
+You then go to https://oss.sonatype.org/index.html#stagingRepositories
+
+- Select the profile
+- Close
+- Select the profile
+- Release
