@@ -3,9 +3,8 @@ package com.teamunify.i18n;
 import static org.junit.Assert.*;
 import java.math.BigDecimal;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import com.teamunify.i18n.settings.BooleanFunction;
@@ -31,10 +30,10 @@ public class I18NTests {
     assertTrue(I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "fr", "", "dd/MM/yyyy", true));
     assertTrue(I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "de", "", "dd.MM.yyyy", true));
     
-    //assertTrue(I.setDefaultDateFormat("en", "", "MM/dd/yyyy"));
-    //assertTrue(I.setDefaultDateFormat("en", "AU", "dd/MM/yyyy"));
-    //assertTrue(I.setDefaultDateFormat("fr", "", "dd/MM/yyyy"));
-    //assertTrue(I.setDefaultDateFormat("de", "", "dd.MM.yyyy"));
+    assertTrue(I.setDefaultDateFormat("en", "", "MM/dd/yyyy"));
+    assertTrue(I.setDefaultDateFormat("en", "AU", "dd/MM/yyyy"));
+    assertTrue(I.setDefaultDateFormat("fr", "", "dd/MM/yyyy"));
+    assertTrue(I.setDefaultDateFormat("de", "", "dd.MM.yyyy"));
   }
 
   @Test
@@ -794,10 +793,38 @@ public class I18NTests {
     assertEquals(2, I.getFractionDigits());
   }
 
+  @Test
   public void testISOTimestampConversions() {
     Date someWeirdDate = new Date(1305982733L);
     assertEquals(122, I.ISOTimestampStringDate("2009-04-03 12:59:33.122", new Date()).getTime() % 1000);
 
     assertEquals(someWeirdDate, I.ISOTimestampStringDate(I.timestampToISOString(someWeirdDate), new Date()));
+  }
+  
+  @Test
+  public void testDayName() {
+    I.setLanguage("en");
+    Calendar c = Calendar.getInstance(I.getCurrentLanguage().locale);
+    c.set(Calendar.HOUR_OF_DAY, 12);
+    c.set(Calendar.DAY_OF_WEEK, Calendar.TUESDAY);
+    assertEquals("Tuesday", I.dayOfWeek(c.getTime(), false));
+    assertEquals("Tue", I.dayOfWeek(c.getTime(), true));
+    I.setLanguage("de");
+    assertEquals("Dienstag", I.dayOfWeek(c.getTime(), false));
+    assertEquals("Di", I.dayOfWeek(c.getTime(), true));
+  }
+  
+  @Test
+  public void testMonthName() {
+    I.setLanguage("en");
+    Calendar c = Calendar.getInstance(I.getCurrentLanguage().locale);
+    c.set(Calendar.HOUR_OF_DAY, 12);
+    c.set(Calendar.DAY_OF_WEEK, Calendar.TUESDAY);
+    c.set(Calendar.MONTH, Calendar.FEBRUARY);
+    assertEquals("February", I.monthName(Calendar.FEBRUARY, false));
+    assertEquals("Feb", I.monthName(Calendar.FEBRUARY, true));
+    I.setLanguage("de");
+    assertEquals("Februar", I.monthName(Calendar.FEBRUARY, false));
+    assertEquals("Feb", I.monthName(Calendar.FEBRUARY, true));
   }
 }

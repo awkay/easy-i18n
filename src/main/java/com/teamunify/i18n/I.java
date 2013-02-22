@@ -11,6 +11,7 @@ import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Currency;
 import java.util.Date;
 import java.util.Locale;
@@ -384,6 +385,16 @@ public final class I {
    */
   public static boolean supports(String lang, String country) {
     return supports(new Locale(lang, country));
+  }
+
+  /**
+   * Convert a date to a string using the default date format.
+   * 
+   * @param d
+   * @return
+   */
+  public static String dateToString(Date d) {
+    return dateToString(d, DEFAULT_DATE_FORMAT_ID);
   }
 
   /**
@@ -1505,10 +1516,56 @@ public final class I {
    * Set the default Date Format to use in methods that do not require an explicit style.
    */
   public static final int DEFAULT_DATE_FORMAT_ID = 9;
+
   public static boolean setDefaultDateFormat(String lang, String country, String spec) {
     Locale l = new Locale(lang, country);
     SimpleDateFormat format = new SimpleDateFormat(spec, l);
     format.setLenient(true);
     return dateFormatVendor.registerFormat(DEFAULT_DATE_FORMAT_ID, l, format);
+  }
+
+  /**
+   * A function for converting a date to a localized name of the weekday that date lands on.
+   * 
+   * @param day
+   *          The day of the week, as returned from Calendar
+   * @param abbreviated
+   *          Should the day name be abbreviated or not?
+   */
+  public static String dayOfWeek(Date day, boolean abbreviated) {
+    final Locale l = languageProvider.vend().locale;
+    final SimpleDateFormat fmt;
+
+    if (abbreviated)
+      fmt = new SimpleDateFormat("EEE", l);
+    else
+      fmt = new SimpleDateFormat("EEEE", l);
+
+    return fmt.format(day).toString();
+  }
+
+  /**
+   * Convert a numeric representation of month (e.g. 1) in the current locale to a localized name for that month (e.g.
+   * January). Uses Calendar.getInstance(locale) internally to translate month numbers.
+   * 
+   * @param monthNumber
+   *          A legal month number for the current locale...typically Calendar.JANUARY (0) to Calendar.DECEMBER (11)
+   * @param abbreviated
+   *          Do you want the three-letter, or full version?
+   * @return The localized name of the month
+   */
+  public static String monthName(int monthNumber, boolean abbreviated) {
+    final Locale l = languageProvider.vend().locale;
+    final Calendar c = Calendar.getInstance(l);
+    final Date d = c.getTime();
+
+    c.set(Calendar.MONTH, monthNumber);
+    final SimpleDateFormat fmt;
+    if (abbreviated)
+      fmt = new SimpleDateFormat("MMM", l);
+    else
+      fmt = new SimpleDateFormat("MMMM", l);
+
+    return fmt.format(d).toString();
   }
 }
