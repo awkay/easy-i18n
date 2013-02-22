@@ -1545,6 +1545,28 @@ public final class I {
   }
 
   /**
+   * Get the name of the day of the week if the supplied date were offset by the given (signed) number of days. E.g. if
+   * the supplied date is on a Monday, the locale is en_US, and offset is -2, then this function returns Saturday.
+   * 
+   * @param day
+   *          The date of the reference date
+   * @param offset_days
+   *          The positive or negative offset in days
+   * @param abbreviated
+   *          Should the day name be abbreviated?
+   * @return The day name
+   */
+  public static String dayOfWeek(Date day, int offset_days, boolean abbreviated) {
+    final Locale l = languageProvider.vend().locale;
+    final Calendar start = Calendar.getInstance(l);
+    start.setTime(day);
+    start.add(Calendar.DAY_OF_MONTH, offset_days);
+    final Date target = start.getTime();
+
+    return dayOfWeek(target, abbreviated);
+  }
+
+  /**
    * Convert a numeric representation of month (e.g. 1) in the current locale to a localized name for that month (e.g.
    * January). Uses Calendar.getInstance(locale) internally to translate month numbers.
    * 

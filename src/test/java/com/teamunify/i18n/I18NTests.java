@@ -812,6 +812,19 @@ public class I18NTests {
     I.setLanguage("de");
     assertEquals("Dienstag", I.dayOfWeek(c.getTime(), false));
     assertEquals("Di", I.dayOfWeek(c.getTime(), true));
+    
+    I.setLanguage("en");
+    c.set(Calendar.DAY_OF_WEEK, Calendar.TUESDAY);
+    Date d = c.getTime();
+    assertEquals("Tuesday", I.dayOfWeek(d, 7, false));
+    assertEquals("Monday", I.dayOfWeek(d, 20, false));
+    assertEquals("Wednesday", I.dayOfWeek(d, 1, false));
+    assertEquals("Monday", I.dayOfWeek(d, -1, false));
+    assertEquals("Thursday", I.dayOfWeek(d, -5, false));
+    assertEquals("Saturday", I.dayOfWeek(d, -10, false));
+    assertEquals("Friday", I.dayOfWeek(d, -11, false));
+    assertEquals("Thursday", I.dayOfWeek(d, -12, false));
+    assertEquals("Thursday", I.dayOfWeek(d, -19, false));
   }
   
   @Test
