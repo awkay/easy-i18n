@@ -13,7 +13,7 @@ import com.teamunify.util.S;
 import static org.apache.commons.lang.StringEscapeUtils.unescapeHtml;
 
 @SuppressWarnings("deprecation")
-public class I18NTests {
+public class TestI18N {
   /**
    * This is a custom date format ID.
    */
@@ -836,6 +836,8 @@ public class I18NTests {
     c.set(Calendar.MONTH, Calendar.FEBRUARY);
     assertEquals("February", I.monthName(Calendar.FEBRUARY, false));
     assertEquals("Feb", I.monthName(Calendar.FEBRUARY, true));
+    assertEquals("September", I.monthName(Calendar.SEPTEMBER, false));
+    assertEquals("March", I.monthName(Calendar.MARCH, false));
     I.setLanguage("de");
     assertEquals("Februar", I.monthName(Calendar.FEBRUARY, false));
     assertEquals("Feb", I.monthName(Calendar.FEBRUARY, true));

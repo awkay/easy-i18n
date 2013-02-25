@@ -1579,9 +1579,9 @@ public final class I {
   public static String monthName(int monthNumber, boolean abbreviated) {
     final Locale l = languageProvider.vend().locale;
     final Calendar c = Calendar.getInstance(l);
+    c.set(Calendar.MONTH, monthNumber);
     final Date d = c.getTime();
 
-    c.set(Calendar.MONTH, monthNumber);
     final SimpleDateFormat fmt;
     if (abbreviated)
       fmt = new SimpleDateFormat("MMM", l);
