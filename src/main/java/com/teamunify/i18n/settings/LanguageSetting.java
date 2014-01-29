@@ -139,7 +139,7 @@ public final class LanguageSetting {
   }
 
   public SimpleDateFormat[] getDateParsers() {
-    SimpleDateFormat[] dateParsers = new SimpleDateFormat[5];
+    SimpleDateFormat[] dateParsers = new SimpleDateFormat[4];
     dateParsers[0] = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.SHORT, locale);
     dateParsers[1] = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.MEDIUM, locale);
     dateParsers[2] = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.LONG, locale);

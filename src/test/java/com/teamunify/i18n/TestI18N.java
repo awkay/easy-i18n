@@ -205,11 +205,20 @@ public class TestI18N {
     I.setLanguage("fr_FR");
     assertEquals(targetDate, I.stringToDate("1997-04-02"));
   }
+  
+  @Test
+  public void testFaultyDateInput() {
+    I.setLanguage("en");
+    I.setDefaultDate(myNullDate);
+    Date val = I.stringToDate("199704-020");
+    assertEquals(myNullDate, val);
+  }
 
   @Test
   public void testLocaleDateInput() {
     final Date d = new Date(103, 0, 3);
 
+    I.setDefaultDate(null);
     assertEquals(null, I.stringToDate(null));
     assertEquals(null, I.stringToDate(""));
     setupNullDate();

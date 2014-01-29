@@ -1580,6 +1580,7 @@ public final class I {
     final Locale l = languageProvider.vend().locale;
     final Calendar c = Calendar.getInstance(l);
     c.set(Calendar.MONTH, monthNumber);
+    c.set(Calendar.DAY, 2);
     final Date d = c.getTime();
 
     final SimpleDateFormat fmt;
