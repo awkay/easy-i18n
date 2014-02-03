@@ -1,5 +1,7 @@
+#: src/test/resources/ExtractMe.java:7
 msgid   "Add"
 msgstr  ""
 
+#: src/test/resources/ExtractMe.java:8
 msgid   "Remove"
 msgstr  ""

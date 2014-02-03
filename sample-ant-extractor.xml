@@ -13,6 +13,7 @@ This file should work on UNIX/Linux/OSX. It will fail on Windows without Cygwin.
 	<fail message="Ant contrib jar. Pleas set ant.contrib in local.properties" unless="ant.contrib" />
 	<fail message="Location of message files is missing. Please set msgs in local.properties" unless="msgs" />
 	<fail message="Supported languages is unset. Please set supported.languages in local.properties (no need to include your default)" unless="supported.languages" />
+	<fail message="Output directory compiled.output should be set in local.properties" unless="compiled.output" />
 	<taskdef resource="net/sf/antcontrib/antlib.xml">
 		<classpath>
       <pathelement location="${ant.contrib}" />
@@ -23,27 +24,32 @@ This file should work on UNIX/Linux/OSX. It will fail on Windows without Cygwin.
 	<property name="msgfmt" value="${binpath}/msgfmt" />
 	<property name="msginit" value="${binpath}/msginit" />
 	<property name="pot.file" value="messages.pot" />
+  <property name="java.src" value="src/main/java" />
 	<tempfile destdir="/tmp" deleteonexit="true" property="text.file.list" />
 	<target name="prepare">
-		<mkdir dir="target/classes"/>
+    <mkdir dir="${compiled.output}"/>
 	</target>
 	<!-- Finds all of the jsp/java files that could contain translation calls -->
 	<target name="build-filelist">
-		<exec executable="find" output="${text.file.list}" logError="true">
+		<exec dir="." executable="find" output="${text.file.list}" logError="true">
          <!-- All your source locations -->
-			<arg value="src/main/java" />
+         <arg value="${java.src}" />
+      <!--
       <arg value="src/main/webapp" />
+      -->
          <!-- All file suffixes that contain Java Code -->
 			<arg value="-name" />
-			<arg value="*.jsp" />
-      <arg value="-o" /> <!-- find command's OR operator -->
-			<arg value="-name" />
 			<arg value="*.java" />
+      <!-- -o is find's OR operator
+      <arg value="-o" /> 
+			<arg value="-name" />
+			<arg value="*.jsp" />
+      -->
 		</exec>
 	</target>
 	<!-- Extracts all strings from java and jsp files -->
 	<target name="build-pot" depends="build-filelist">
-		<exec executable="${xgettext}">
+		<exec dir="." executable="${xgettext}">
 			<arg value="-L" />
 			<arg value="Java" />
 			<arg value="-i" />
@@ -66,7 +72,7 @@ This file should work on UNIX/Linux/OSX. It will fail on Windows without Cygwin.
 			<arg value="--force-po" />
 			<arg value="--omit-header" />
 			<arg value="-o" />
-			<arg value="${pot.file}" />
+      <arg value="${msgs}/${pot.file}" />
 		</exec>
 	</target>
 	<target name="do-po">
@@ -82,38 +88,38 @@ This file should work on UNIX/Linux/OSX. It will fail on Windows without Cygwin.
 		</if>
 	</target>
 	<target name="create-po">
-		<available file="${lang}.po" property="lang.exists" />
+    <available file="${msgs}/${lang}.po" property="lang.exists" />
 		<exec executable="${msginit}">
 			<arg value="--no-wrap" />
 			<arg value="-o" />
-			<arg value="${lang}.po" />
+      <arg value="${msgs}/${lang}.po" />
 			<arg value="-i" />
-			<arg value="${pot.file}" />
+      <arg value="${msgs}/${pot.file}" />
 		</exec>
 	</target>
 	<target name="merge-po">
-		<exec executable="${msgmerge}">
+		<exec dir="." executable="${msgmerge}">
 			<arg value="-i" />
 			<arg value="-F" />
 			<arg value="--no-wrap" />
 			<arg value="-o" />
-			<arg value="${lang}.po" />
-			<arg value="${lang}.po" />
-			<arg value="${pot.file}" />
+      <arg value="${msgs}/${lang}.po" />
+      <arg value="${msgs}/${lang}.po" />
+      <arg value="${msgs}/${pot.file}" />
 		</exec>
 	</target>
 	<target name="build-class" depends="prepare">
-		<exec executable="${msgfmt}">
+		<exec dir="." executable="${msgfmt}">
 			<arg value="--verbose" />
 			<arg value="-f" />
 			<arg value="-r" />
 			<arg value="com.teamunify.i18n.messages" />
 			<arg value="--java2" />
 			<arg value="-d" />
-			<arg value="target/classes" />
+      <arg value="${compiled.output}" />
 			<arg value="-l" />
 			<arg value="${lang}" />
-			<arg value="${lang}.po" />
+      <arg value="${msgs}/${lang}.po" />
 		</exec>
 	</target>
 	<!-- Push any new messages from the POT file to the various PO files. -->
