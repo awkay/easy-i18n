@@ -8,15 +8,16 @@ for doing translation.
 This file should work on UNIX/Linux/OSX. It will fail on Windows without Cygwin.
 -->
 <project basedir="." default="build-classes" name="i18nMessages">
-	<loadproperties srcFile="../local.properties" />
+	<loadproperties srcFile="local.properties" />
 	<fail message="binpath is missing. Make sure to generate local.properties and add binpath = path_to_gettext" unless="binpath" />
+	<fail message="Ant contrib jar. Pleas set ant.contrib in local.properties" unless="ant.contrib" />
+	<fail message="Location of message files is missing. Please set msgs in local.properties" unless="msgs" />
+	<fail message="Supported languages is unset. Please set supported.languages in local.properties (no need to include your default)" unless="supported.languages" />
 	<taskdef resource="net/sf/antcontrib/antlib.xml">
 		<classpath>
-			<pathelement location="build-deps/ant-contrib-1.0b3.jar" />
+      <pathelement location="${ant.contrib}" />
 		</classpath>
 	</taskdef>
-	<!-- languages in ADDITION to english -->
-	<property name="supported.languages" value="fr,es" />
 	<property name="xgettext" value="${binpath}/xgettext" />
 	<property name="msgmerge" value="${binpath}/msgmerge" />
 	<property name="msgfmt" value="${binpath}/msgfmt" />
@@ -29,13 +30,13 @@ This file should work on UNIX/Linux/OSX. It will fail on Windows without Cygwin.
 	<!-- Finds all of the jsp/java files that could contain translation calls -->
 	<target name="build-filelist">
 		<exec executable="find" output="${text.file.list}" logError="true">
-         <!-- All your source locaionts -->
-			<arg value="../MyProject/src/main/java" />
-			<arg value="../WebProject/WebContent" />
+         <!-- All your source locations -->
+			<arg value="src/main/java" />
+      <arg value="src/main/webapp" />
          <!-- All file suffixes that contain Java Code -->
 			<arg value="-name" />
 			<arg value="*.jsp" />
-			<arg value="-o" />
+      <arg value="-o" /> <!-- find command's OR operator -->
 			<arg value="-name" />
 			<arg value="*.java" />
 		</exec>

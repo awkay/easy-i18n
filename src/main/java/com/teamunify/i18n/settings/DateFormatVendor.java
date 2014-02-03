@@ -5,67 +5,72 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
-import com.teamunify.i18n.I;
 
 /**
  * A class on which you can register custom date formats.
- * 
+ *
  * @author tonykay
  */
-final public class CustomDateFormatVendor {
+final public class DateFormatVendor {
+  public static final int DEFAULT_DATE_FORMAT_ID = 9;
   private ConcurrentHashMap<DFKey, DateFormat> registry = new ConcurrentHashMap<DFKey, DateFormat>();
   private HashMap<DFKey, DateFormat[]> inputRegistry = new HashMap<DFKey, DateFormat[]>();
 
   /**
    * Returns a date format object for the given (registered) formatID and locale.
-   * 
-   * <p>
+   * <p/>
+   * <p/>
    * This method attempts to find a match for the exact locale first. If that fails, it attempts dropping the country
    * code (if applicable) and searching for a match on just the language. If that fails, it will return Java
    * DateFormat.getInstance(style) for the alternate specified.
-   * 
-   * @param formatID
-   *          The format ID previously registered
-   * @param l
-   *          The locale
-   * @param alternate
-   *          The Java locale-specific DateFormat.(SHORT, MEDIUM, LONG) to return if not found.
-   * @return The registered date format for the given locale
+   *
+   * @param formatID  The format ID previously registered
+   * @param l         The locale
+   * @param alternate The Java locale-specific DateFormat.(SHORT, MEDIUM, LONG) to return if not found.
+   * @return The registered date format for the given locale, the alternate if necessary, and DateFormat.SHORT if all else fails.
    */
   public DateFormat getFormatFor(int formatID, Locale l, int alternate) {
-    DFKey key = new DFKey(formatID, l);
-    DateFormat rv = registry.get(key);
+    DateFormat rv = null;
+    if (formatID == DateFormat.SHORT || formatID == DateFormat.LONG || formatID == DateFormat.MEDIUM)
+      rv = DateFormat.getDateInstance(formatID, l);
+    else {
+      DFKey key = new DFKey(formatID, l);
+      rv = registry.get(key);
+      if (rv == null)
+        rv = registry.get(key.withoutCountry());
+      if(rv == null && formatID == DEFAULT_DATE_FORMAT_ID)
+        return DateFormat.getDateInstance(DateFormat.SHORT, l);
+    }
     if (rv == null)
-      rv = registry.get(key.withoutCountry());
-    if (rv == null)
-      rv = DateFormat.getDateInstance(alternate);
+      return getFormatFor(alternate, l, DateFormat.SHORT);
     return rv;
   }
 
   /**
    * Register the given format with this vendor. You must manually remove a registered format, as this function will
    * refuse to overwrite.
-   * 
-   * @param formatID
-   *          The format ID (MUST be > 10)
-   * @param l
-   *          The locale that this format applies to
-   * @param fmt
-   *          The format
-   * @return True on success, false if there is already one registered
+   *
+   * @param formatID     The format ID. MUST be > DEFAULT_DATE_FORMAT_ID
+   * @param l            The locale that this format applies to
+   * @param fmt          The format
+   * @param useWithInput Pass true if you want this format to be accepted for date input.
+   * @throws IllegalArgumentException if formatID is too small.
    */
-  public boolean registerFormat(int formatID, Locale l, DateFormat fmt) {
+  public void registerFormat(int formatID, Locale l, DateFormat fmt, boolean useWithInput) {
+    if (formatID < DEFAULT_DATE_FORMAT_ID)
+      throw new IllegalArgumentException(String.format("Custom date format IDs must be greater than DEFAULT_DATE_FORMAT_ID (%d)", DEFAULT_DATE_FORMAT_ID));
     DFKey key = new DFKey(formatID, l);
-    return registry.putIfAbsent(key, fmt) == null;
+    registry.put(key, fmt);
+
+    if(useWithInput)
+      this.registerInputFormat(l, fmt);
   }
-  
+
   /**
    * Remove a registered format from the vendor.
-   * 
-   * @param formatID
-   *          The format ID
-   * @param l
-   *          The locale to affect
+   *
+   * @param formatID The format ID
+   * @param l        The locale to affect
    */
   public void unregisterFormat(int formatID, Locale l) {
     DFKey key = new DFKey(formatID, l);
@@ -105,12 +110,10 @@ class DFKey {
   private String localeName;
 
   public DFKey(int formatID, Locale l) {
-    if (formatID < I.DEFAULT_DATE_FORMAT_ID)
-      throw new IllegalArgumentException("Custom date format IDs must be > 10");
     this.formatID = formatID;
     this.localeName = l.toString();
   }
-  
+
   private DFKey(int formatID, String lname) {
     this.formatID = formatID;
     this.localeName = lname;

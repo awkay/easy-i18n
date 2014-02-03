@@ -1,18 +1,18 @@
 package com.teamunify.i18n;
 
-import static org.junit.Assert.*;
+import com.teamunify.i18n.settings.BooleanFunction;
+import com.teamunify.i18n.settings.LanguageSetting;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import com.teamunify.i18n.settings.BooleanFunction;
-import com.teamunify.i18n.settings.LanguageSetting;
-import com.teamunify.util.S;
-import static org.apache.commons.lang.StringEscapeUtils.unescapeHtml;
 
-@SuppressWarnings("deprecation")
+import static org.apache.commons.lang.StringEscapeUtils.unescapeHtml;
+import static org.junit.Assert.*;
+
 public class TestI18N {
   /**
    * This is a custom date format ID.
@@ -24,16 +24,16 @@ public class TestI18N {
 
   @BeforeClass
   public static void setup() {
-    assertTrue(I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "en","", "MM/dd/yyyy", true));
-    assertTrue(I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "en", "US", "MM/dd/yyyy", true));
-    assertTrue(I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "en", "AU", "dd/MM/yyyy", true));
-    assertTrue(I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "fr", "", "dd/MM/yyyy", true));
-    assertTrue(I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "de", "", "dd.MM.yyyy", true));
-    
-    assertTrue(I.setDefaultDateFormat("en", "", "MM/dd/yyyy"));
-    assertTrue(I.setDefaultDateFormat("en", "AU", "dd/MM/yyyy"));
-    assertTrue(I.setDefaultDateFormat("fr", "", "dd/MM/yyyy"));
-    assertTrue(I.setDefaultDateFormat("de", "", "dd.MM.yyyy"));
+    I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "en", "", "MM/dd/yyyy", true);
+    I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "en", "US", "MM/dd/yyyy", true);
+    I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "en", "AU", "dd/MM/yyyy", true);
+    I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "fr", "", "dd/MM/yyyy", true);
+    I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "de", "", "dd.MM.yyyy", true);
+
+    I.setDefaultDateFormat("en", "", "MM/dd/yyyy");
+    I.setDefaultDateFormat("en", "AU", "dd/MM/yyyy");
+    I.setDefaultDateFormat("fr", "", "dd/MM/yyyy");
+    I.setDefaultDateFormat("de", "", "dd.MM.yyyy");
   }
 
   @Test
@@ -205,7 +205,7 @@ public class TestI18N {
     I.setLanguage("fr_FR");
     assertEquals(targetDate, I.stringToDate("1997-04-02"));
   }
-  
+
   @Test
   public void testFaultyDateInput() {
     I.setLanguage("en");
@@ -251,13 +251,26 @@ public class TestI18N {
   }
 
   @Test
-  public void testLocaleDateInputHelpStrings() {
+  public void preferred_date_format_uses_current_locale_for_date_formatting() {
     I.setLanguage("en");
     assertEquals("M/d/yy", I.preferredDateFormat());
     I.setLanguage("fr_FR");
     assertEquals("dd/MM/yy", I.preferredDateFormat());
     I.setLanguage("de_DE");
     assertEquals("dd.MM.yy", I.preferredDateFormat());
+  }
+
+  @Test
+  public void preferred_date_format_can_be_obtained_for_alternate_format_ids() {
+    I.setLanguage("en");
+    assertEquals("MMMM d, yyyy", I.preferredDateFormat(DateFormat.LONG));
+  }
+
+  @Test
+  public void preferred_date_format_is_empty_for_undefined_format_ids() {
+    final int undefinedFormat = 12398745;
+    I.setLanguage("en");
+    assertEquals("", I.preferredDateFormat(undefinedFormat));
   }
 
   @Test
@@ -662,9 +675,9 @@ public class TestI18N {
 
   private boolean areEqualTimestamps(Date a, Date b, boolean compareSeconds) {
     boolean rv =
-      a.getMonth() == b.getMonth() && a.getDate() == b.getDate() && a.getYear() == b.getYear()
-          && a.getHours() == b.getHours() && a.getMinutes() == b.getMinutes()
-          && (!compareSeconds || a.getSeconds() == b.getSeconds());
+        a.getMonth() == b.getMonth() && a.getDate() == b.getDate() && a.getYear() == b.getYear()
+        && a.getHours() == b.getHours() && a.getMinutes() == b.getMinutes()
+        && (!compareSeconds || a.getSeconds() == b.getSeconds());
     if (!rv)
       assertEquals(a, b); // to get error message with comparison display
     return rv;
@@ -789,7 +802,7 @@ public class TestI18N {
     assertEquals("Tony\\'s brother says \\\"Hi!\\\"", I.trj("Tony's brother says \"Hi!\""));
 
     assertEquals("H\\u00E9llo", I.trfj("{0}", "Héllo"));
-    assertEquals("Tony\\'s brother says \\\"Hi!\\\"", I.trfj("Tony''s brother says {0}", S.qq("Hi!")));
+    assertEquals("Tony\\'s brother says \\\"Hi!\\\"", I.trfj("Tony''s brother says {0}", "\"Hi!\""));
   }
 
   @Test
@@ -809,7 +822,7 @@ public class TestI18N {
 
     assertEquals(someWeirdDate, I.ISOTimestampStringDate(I.timestampToISOString(someWeirdDate), new Date()));
   }
-  
+
   @Test
   public void testDayName() {
     I.setLanguage("en");
@@ -821,7 +834,7 @@ public class TestI18N {
     I.setLanguage("de");
     assertEquals("Dienstag", I.dayOfWeek(c.getTime(), false));
     assertEquals("Di", I.dayOfWeek(c.getTime(), true));
-    
+
     I.setLanguage("en");
     c.set(Calendar.DAY_OF_WEEK, Calendar.TUESDAY);
     Date d = c.getTime();
@@ -835,14 +848,10 @@ public class TestI18N {
     assertEquals("Thursday", I.dayOfWeek(d, -12, false));
     assertEquals("Thursday", I.dayOfWeek(d, -19, false));
   }
-  
+
   @Test
   public void testMonthName() {
     I.setLanguage("en");
-    Calendar c = Calendar.getInstance(I.getCurrentLanguage().locale);
-    c.set(Calendar.HOUR_OF_DAY, 12);
-    c.set(Calendar.DAY_OF_WEEK, Calendar.TUESDAY);
-    c.set(Calendar.MONTH, Calendar.FEBRUARY);
     assertEquals("February", I.monthName(Calendar.FEBRUARY, false));
     assertEquals("Feb", I.monthName(Calendar.FEBRUARY, true));
     assertEquals("September", I.monthName(Calendar.SEPTEMBER, false));

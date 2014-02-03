@@ -1,0 +1,5 @@
+msgid   "Add"
+msgstr  ""
+
+msgid   "Remove"
+msgstr  ""

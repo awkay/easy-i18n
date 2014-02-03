@@ -10,17 +10,27 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Vector;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This stores the pair of Locale and ResourceBundle. The former is needed by message format to format currency, dates,
- * etc. The latter holds the current translations for all messages. These are stored in thread local variables during
- * request processing.
- * 
- * @see com.teamunify.i18n.webapp.ServletLocaleFilter
- * 
+ * This stores all of the information necessary to process locale-specific data, such as message strings, dates,
+ * currency, etc. The central I class obtains the language settings via a LanguageSettingsProvider, which must be
+ * set before any of the methods can be used.
+ * <p>
+ * Regular Java applications will use a provider that is simply a singleton. Webapps will most likely use a thread-local
+ * provider so that a given set of settings are used on each request thread, allowing the webapp to set the locale
+ * as each request is processed.
+ * </p>
+ * <p>
+ * Compiled translation files (using GNU gettext conversion to Java) MUST be placed in the com.teamunify.i18n package,
+ * and must be named according to the locale naming standards (e.g. messages_en_US). You can change the required package
+ * by setting LanguageSetting.translationPackage BEFORE using any i18n facilities.
+ * </p>
+ *
  * @author tonykay
+ * @see com.teamunify.i18n.webapp.ServletLocaleFilter
  */
 public final class LanguageSetting {
   private static Logger log = LoggerFactory.getLogger(LanguageSetting.class);
@@ -35,9 +45,9 @@ public final class LanguageSetting {
     protected Object handleGetObject(String key) {
       return null;
     }
-    
+
     @Override
-    public String toString() { 
+    public String toString() {
       return "EmptyBundle";
     }
   };
@@ -67,11 +77,9 @@ public final class LanguageSetting {
 
   /**
    * Look up the possible translation resources that should be used for the locale.
-   * 
-   * @param baseClassPackage
-   *          The package name of your compiled translation resources (e.g. com.mycomp.i18n)
-   * @param l
-   *          The locale you want translations for
+   *
+   * @param baseClassPackage The package name of your compiled translation resources (e.g. com.mycomp.i18n)
+   * @param l                The locale you want translations for
    * @return An array of translation resources, possibly empty
    */
   public ResourceBundle findBestTranslation(String baseClassPackage, Locale l) {
@@ -112,31 +120,6 @@ public final class LanguageSetting {
   public final ResourceBundle translation;
   public final MessageFormat formatter;
   public final String currencySymbol;
-
-  public DateFormat formatterFor(int style) {
-    switch (style) {
-      case DateFormat.SHORT:
-        return getShortDateParser();
-      case DateFormat.MEDIUM:
-        return getMediumDateParser();
-      case DateFormat.LONG:
-        return getLongDateParser();
-      default:
-        return null;
-    }
-  }
-
-  public SimpleDateFormat getShortDateParser() {
-    return (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.SHORT, locale);
-  }
-
-  public SimpleDateFormat getMediumDateParser() {
-    return (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.MEDIUM, locale);
-  }
-
-  public SimpleDateFormat getLongDateParser() {
-    return (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.LONG, locale);
-  }
 
   public SimpleDateFormat[] getDateParsers() {
     SimpleDateFormat[] dateParsers = new SimpleDateFormat[4];

@@ -1,0 +1,5 @@
+binpath=/opt/local/bin
+ant.contrib=/opt/local/share/java/apache-ant/lib/ant-contrib-1.0b3.jar
+msgs = src/test/resources/msgs
+# The strings in the code are "en", this list is the "additional" support
+supported.languages = fr_CA,fr,en_AU
