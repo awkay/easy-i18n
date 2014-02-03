@@ -1,6 +1,7 @@
 package com.teamunify.i18n;
 
 import com.teamunify.i18n.settings.BooleanFunction;
+import com.teamunify.i18n.settings.GlobalLanguageSettingsProvider;
 import com.teamunify.i18n.settings.LanguageSetting;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -14,12 +15,26 @@ import static org.apache.commons.lang.StringEscapeUtils.unescapeHtml;
 import static org.junit.Assert.*;
 
 public class TestI18N {
+  static {
+    LanguageSetting.translationPackage = "i18n.msgs";
+    I.setLanguageSettingsProvider(new GlobalLanguageSettingsProvider());
+  }
+
   /**
    * This is a custom date format ID.
    */
   public static final int TU_STANDARD_DATE_TYPE = 100;
 
-  private static final Date myNullDate = new Date(30, 0, 0);
+  private static final Calendar c = Calendar.getInstance();
+  private static final int NULL_YEAR = 1930;
+
+  static {
+    c.set(Calendar.YEAR, NULL_YEAR);
+    c.set(Calendar.MONTH, 0);
+    c.set(Calendar.DAY_OF_MONTH, 1);
+  }
+
+  private static final Date myNullDate = c.getTime();
   private static final Date nulldatePlusSome = new Date(myNullDate.getTime() + 103295);
 
   @BeforeClass
@@ -37,11 +52,16 @@ public class TestI18N {
   }
 
   @Test
-  public void testLanguageSupportTests() {
+  public void indicates_which_languages_have_translations() {
     assertTrue(I.supports("fr"));
-    assertTrue(I.supports("es"));
+    assertTrue(I.supports("fr_CA"));
+    assertTrue(I.supports("fr", "CA"));
     assertTrue(I.supports("en_AU"));
     assertTrue(I.supports("en", "AU"));
+    assertTrue(I.supports("en"));
+
+    assertFalse(I.supports("cz"));
+    assertFalse(I.supports("es"));
   }
 
   @Test
@@ -157,7 +177,7 @@ public class TestI18N {
   public void setupNullDate() {
     I.setNullDateTest(new BooleanFunction<Date>() {
       public boolean apply(Date obj) {
-        return obj == null || (obj.getYear() == myNullDate.getYear());
+        return obj == null || (c.get(Calendar.YEAR) == NULL_YEAR);
       }
     });
     I.setDefaultDate(myNullDate);
@@ -174,7 +194,7 @@ public class TestI18N {
 
   @Test
   public void testDateOutput() {
-    final Date d = new Date(99, 0, 3);
+    final Date d = makeDate(1, 3, 1999);
 
     I.setLanguage("en");
     assertEquals("1/3/99", I.dateToString(d, DateFormat.SHORT));
@@ -199,7 +219,7 @@ public class TestI18N {
 
   @Test
   public void testDateInputISOAlwaysOK() {
-    final Date targetDate = new Date(97, 3, 2);
+    final Date targetDate = makeDate(4, 2, 1997);
     I.setLanguage("en");
     assertEquals(targetDate, I.stringToDate("1997-04-02"));
     I.setLanguage("fr_FR");
@@ -216,7 +236,7 @@ public class TestI18N {
 
   @Test
   public void testLocaleDateInput() {
-    final Date d = new Date(103, 0, 3);
+    final Date d = makeDate(1, 3, 2003);
 
     I.setDefaultDate(null);
     assertEquals(null, I.stringToDate(null));
@@ -563,7 +583,7 @@ public class TestI18N {
 
   @Test
   public void testCustomDateFormats() {
-    Date d = new Date(101, 4, 2);
+    Date d = makeDate(2, 5, 2001);
     I.setLanguage("en");
     assertEquals("05/02/2001", I.dateToString(d, TU_STANDARD_DATE_TYPE));
     assertEquals("", I.dateToString(null, TU_STANDARD_DATE_TYPE));
@@ -674,10 +694,19 @@ public class TestI18N {
   }
 
   private boolean areEqualTimestamps(Date a, Date b, boolean compareSeconds) {
-    boolean rv =
-        a.getMonth() == b.getMonth() && a.getDate() == b.getDate() && a.getYear() == b.getYear()
-        && a.getHours() == b.getHours() && a.getMinutes() == b.getMinutes()
-        && (!compareSeconds || a.getSeconds() == b.getSeconds());
+    Calendar ca = Calendar.getInstance();
+    Calendar cb = Calendar.getInstance();
+    ca.setTime(a);
+    cb.setTime(b);
+
+    ca.set(Calendar.MILLISECOND, 0);
+    cb.set(Calendar.MILLISECOND, 0);
+
+    if (!compareSeconds) {
+      ca.set(Calendar.SECOND, 0);
+      cb.set(Calendar.SECOND, 0);
+    }
+    boolean rv = ca.getTime().getTime() == cb.getTime().getTime();
     if (!rv)
       assertEquals(a, b); // to get error message with comparison display
     return rv;
@@ -697,7 +726,7 @@ public class TestI18N {
 
   @Test
   public void testTimestampInput() {
-    Date d = new Date(111, 2, 4, 23, 37, 10);
+    Date d = makeTimestamp(3, 4, 2011, 23, 37, 10);
     I.setLanguage("en");
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("3/4/11 11:37 PM", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("03/04/11 11:37 PM", null), false));
@@ -859,5 +888,25 @@ public class TestI18N {
     I.setLanguage("de");
     assertEquals("Februar", I.monthName(Calendar.FEBRUARY, false));
     assertEquals("Feb", I.monthName(Calendar.FEBRUARY, true));
+  }
+
+  private Date makeDate(int month, int day, int year) {
+    Calendar c = Calendar.getInstance();
+    c.set(Calendar.YEAR, year);
+    c.set(Calendar.MONTH, month - 1);
+    c.set(Calendar.DAY_OF_MONTH, day);
+    return c.getTime();
+  }
+
+  private Date makeTimestamp(int month, int day, int year, int hour, int min, int sec) {
+    Calendar c = Calendar.getInstance();
+    c.set(Calendar.YEAR, year);
+    c.set(Calendar.MONTH, month - 1);
+    c.set(Calendar.DAY_OF_MONTH, day);
+    c.set(Calendar.HOUR_OF_DAY, hour);
+    c.set(Calendar.MINUTE, min);
+    c.set(Calendar.SECOND, sec);
+    c.set(Calendar.MILLISECOND, 837);
+    return c.getTime();
   }
 }

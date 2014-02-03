@@ -1,0 +1,18 @@
+msgid   ""
+msgstr  "Project-Id-Version: easy-i 18n\n"
+        "PO-Revision-Date: 2014-02-03 11:49-0800\n"
+        "Last-Translator: Tony Kay <tonykay@tony-kays-computer.local>\n"
+        "Language-Team: English\n"
+        "Language: en_US\n"
+        "MIME-Version: 1.0\n"
+        "Content-Type: text/plain; charset=UTF-8\n"
+        "Content-Transfer-Encoding: 8bit\n"
+        "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/test/resources/ExtractMe.java:7
+msgid   "Add"
+msgstr  "Add"
+
+#: src/test/resources/ExtractMe.java:8
+msgid   "Remove"
+msgstr  "Remove"

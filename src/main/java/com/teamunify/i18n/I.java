@@ -464,7 +464,8 @@ public final class I {
       return rv;
     ParseException e = null;
     LanguageSetting s = languageProvider.vend();
-    for (SimpleDateFormat fmt : s.getDateParsers()) {
+    DateFormat formats[] = dateFormatVendor.getInputFormats(s.locale);
+    for (DateFormat fmt : formats) {
       try {
         rv = fmt.parse(source);
         return rv;

@@ -1,6 +1,7 @@
 package com.teamunify.i18n.settings;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
@@ -38,7 +39,7 @@ final public class DateFormatVendor {
       rv = registry.get(key);
       if (rv == null)
         rv = registry.get(key.withoutCountry());
-      if(rv == null && formatID == DEFAULT_DATE_FORMAT_ID)
+      if (rv == null && formatID == DEFAULT_DATE_FORMAT_ID)
         return DateFormat.getDateInstance(DateFormat.SHORT, l);
     }
     if (rv == null)
@@ -62,7 +63,7 @@ final public class DateFormatVendor {
     DFKey key = new DFKey(formatID, l);
     registry.put(key, fmt);
 
-    if(useWithInput)
+    if (useWithInput)
       this.registerInputFormat(l, fmt);
   }
 
@@ -101,7 +102,20 @@ final public class DateFormatVendor {
     if (rv == null)
       rv = emptyList;
 
-    return rv;
+    return getDateParsers(rv, l);
+  }
+
+  DateFormat[] getDateParsers(DateFormat[] customFormats, Locale locale) {
+    DateFormat[] dateParsers = new SimpleDateFormat[4 + customFormats.length];
+    dateParsers[0] = DateFormat.getDateInstance(DateFormat.SHORT, locale);
+    dateParsers[1] = DateFormat.getDateInstance(DateFormat.MEDIUM, locale);
+    dateParsers[2] = DateFormat.getDateInstance(DateFormat.LONG, locale);
+    dateParsers[3] = new SimpleDateFormat("yyyy-MM-dd", locale);
+
+    for (int i = 0; i < customFormats.length; i++)
+      dateParsers[4 + i] = customFormats[i];
+
+    return dateParsers;
   }
 }
 

@@ -94,6 +94,11 @@ public class DateFormatVendorTests {
     assertNotSameFormat(vendor.getFormatFor(customFormatID, Locale.UK, DateFormat.LONG), dmy);
   }
 
+  @Test
+  public void vendor_returns_standard_input_formats() {
+    assertEquals(4, vendor.getInputFormats(Locale.US).length);
+  }
+
   /**
    * Helper for checking formats.
    */

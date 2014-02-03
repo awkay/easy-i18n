@@ -1,6 +1,13 @@
+# OSX MacPorts (sudo port install gettext)
 binpath=/opt/local/bin
+# OSX..install from MacPorts (sudo port install ant-contrib)
 ant.contrib=/opt/local/share/java/apache-ant/lib/ant-contrib-1.0b3.jar
-msgs = src/test/resources/msgs
-# The strings in the code are "en", this list is the "additional" support
-supported.languages = fr_CA,fr,en_AU
+# The location of your i18n POT and PO files
+msgs = src/main/resources/msgs
+supported.languages = en,fr_CA,fr,en_AU
+# Where to write the output classes
 compiled.output = target/classes
+# The test sources for sample extraction are in src/test/resources
+java.src = src/main/java
+# Remember to set LanguageSetting.translationPackage to match this, if you change it from default
+# i18n.package = com.teamunify.i18n

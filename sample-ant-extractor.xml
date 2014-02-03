@@ -25,6 +25,7 @@ This file should work on UNIX/Linux/OSX. It will fail on Windows without Cygwin.
 	<property name="msginit" value="${binpath}/msginit" />
 	<property name="pot.file" value="messages.pot" />
   <property name="java.src" value="src/main/java" />
+  <property name="i18n.package" value="com.teamunify.i18n" />
 	<tempfile destdir="/tmp" deleteonexit="true" property="text.file.list" />
 	<target name="prepare">
     <mkdir dir="${compiled.output}"/>
@@ -113,7 +114,7 @@ This file should work on UNIX/Linux/OSX. It will fail on Windows without Cygwin.
 			<arg value="--verbose" />
 			<arg value="-f" />
 			<arg value="-r" />
-			<arg value="com.teamunify.i18n.messages" />
+      <arg value="${i18n.package}.messages" />
 			<arg value="--java2" />
 			<arg value="-d" />
       <arg value="${compiled.output}" />

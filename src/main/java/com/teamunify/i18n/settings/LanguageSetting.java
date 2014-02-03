@@ -121,14 +121,6 @@ public final class LanguageSetting {
   public final MessageFormat formatter;
   public final String currencySymbol;
 
-  public SimpleDateFormat[] getDateParsers() {
-    SimpleDateFormat[] dateParsers = new SimpleDateFormat[4];
-    dateParsers[0] = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.SHORT, locale);
-    dateParsers[1] = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.MEDIUM, locale);
-    dateParsers[2] = (SimpleDateFormat) DateFormat.getDateInstance(DateFormat.LONG, locale);
-    dateParsers[3] = new SimpleDateFormat("yyyy-MM-dd", locale);
-    return dateParsers;
-  }
 
   public DateFormat getShortTimeFormat() {
     return (SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.SHORT);
