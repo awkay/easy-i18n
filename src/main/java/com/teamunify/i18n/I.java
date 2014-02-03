@@ -646,7 +646,7 @@ public final class I {
    * @return A number that has be correctly divided to have the right number of fractional digits.
    */
   public static String longToCurrencyString(long amount, boolean bCurrencySign) {
-    int scale = getFractionDigits();
+    int scale = getCurrencyFractionDigits();
     int divisor = scale > 0 ? (int) Math.pow(10, scale) : 1;
     BigDecimal b = new BigDecimal(amount);
     b = b.divide(new BigDecimal(divisor), scale, RoundingMode.HALF_UP);
@@ -658,7 +658,7 @@ public final class I {
    *
    * @return The number of floating point digits.
    */
-  public static int getFractionDigits() {
+  public static int getCurrencyFractionDigits() {
     LanguageSetting s = languageProvider.vend();
     Currency c = Currency.getInstance(s.locale);
     int scale = c.getDefaultFractionDigits();
@@ -736,7 +736,7 @@ public final class I {
    */
   public static long currencyStringToLong(String amount, long defaultValue) {
     Number n = currencyStringToNumber(amount, new Long(defaultValue));
-    int scale = getFractionDigits();
+    int scale = getCurrencyFractionDigits();
     int multiple = scale > 0 ? (int) Math.pow(10, scale) : 1;
     BigDecimal b = new BigDecimal(n.toString());
     return b.multiply(new BigDecimal(multiple)).longValue();
@@ -990,7 +990,7 @@ public final class I {
    * currency.
    */
   public static double roundCurrency(double unroundedNumber) {
-    int scale = getFractionDigits();
+    int scale = getCurrencyFractionDigits();
     double divisor = scale > 0 ? (int) Math.pow(10, scale) : 1.0;
     return Math.round(unroundedNumber * divisor) / divisor;
   }
@@ -1298,7 +1298,7 @@ public final class I {
    * @param defaultValue The date to return if parsing fails
    * @return The parsed date, or defaultValue.
    */
-  public static Date ISOTimestampStringDate(String iso, Date defaultValue) {
+  public static Date ISOTimestampToDate(String iso, Date defaultValue) {
     if (iso == null || iso.isEmpty())
       return defaultValue;
     try {
