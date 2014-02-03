@@ -76,7 +76,7 @@ This file should work on UNIX/Linux/OSX. It will fail on Windows without Cygwin.
 		</exec>
 	</target>
 	<target name="do-po">
-		<available file="${lang}.po" property="lang.exists" />
+    <available file="${msgs}/${lang}.po" property="lang.exists" />
 		<if>
 			<istrue value="${lang.exists}" />
 			<then>
