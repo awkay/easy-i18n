@@ -63,7 +63,7 @@ public final class LanguageSetting {
     currencySymbol = d.getDecimalFormatSymbols().getCurrencySymbol();
   }
 
-  private ResourceBundle loadResourceBundle(String fqcn) {
+  private static ResourceBundle loadResourceBundle(String fqcn) {
     try {
       return (ResourceBundle) Class.forName(fqcn).newInstance();
     } catch (Exception e) {
@@ -82,9 +82,9 @@ public final class LanguageSetting {
    * @param l                The locale you want translations for
    * @return An array of translation resources, possibly empty
    */
-  public ResourceBundle findBestTranslation(String baseClassPackage, Locale l) {
-    String lang = locale.getLanguage();
-    String key = locale.toString();
+  public static ResourceBundle findBestTranslation(String baseClassPackage, Locale l) {
+    String lang = l.getLanguage();
+    String key = l.toString();
 
     ResourceBundle rv = translations.get(key);
 

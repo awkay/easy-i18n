@@ -20,7 +20,7 @@ public class LanguageSettingTests {
 
   @Test
   public void uses_empty_language_bundle_when_no_bundle_exists() {
-    assertEquals(someSetting.findBestTranslation(LanguageSetting.translationPackage, Locale.CHINESE), LanguageSetting.emptyLanguageBundle);
+    assertEquals(LanguageSetting.emptyLanguageBundle, someSetting.findBestTranslation(LanguageSetting.translationPackage, Locale.CHINESE));
   }
 
   @Test

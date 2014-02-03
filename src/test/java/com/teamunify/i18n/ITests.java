@@ -634,7 +634,7 @@ public class ITests {
   }
 
   @Test
-  public void currency_symbols_can_be_ommitted_from_currency_strings() {
+  public void currency_symbols_can_be_omitted_from_currency_strings() {
     I.setLanguage("en");
     assertEquals("8,888.88", I.longToCurrencyString(888888, false));
     I.setLanguage("fr_FR");
