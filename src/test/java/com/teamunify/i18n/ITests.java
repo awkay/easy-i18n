@@ -1,5 +1,6 @@
 package com.teamunify.i18n;
 
+import com.teamunify.i18n.escape.EscapeFunction;
 import com.teamunify.i18n.settings.BooleanFunction;
 import com.teamunify.i18n.settings.GlobalLanguageSettingsProvider;
 import com.teamunify.i18n.settings.LanguageSetting;
@@ -10,14 +11,18 @@ import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import static org.apache.commons.lang.StringEscapeUtils.unescapeHtml;
 import static org.junit.Assert.*;
 
-public class TestI18N {
+public class ITests {
   static {
     LanguageSetting.translationPackage = "i18n.msgs";
-    I.setLanguageSettingsProvider(new GlobalLanguageSettingsProvider());
+    GlobalLanguageSettingsProvider provider = new GlobalLanguageSettingsProvider();
+    I.setLanguageSettingsProvider(provider);
+    I.setLanguage(Locale.US);
+    I.setEscapeFunction(EscapeFunction.EscapeHTML);
   }
 
   /**
@@ -65,20 +70,24 @@ public class TestI18N {
   }
 
   @Test
-  public void testSetup() {
-    I.setLanguage("en");
+  public void translation_bundles_are_never_null() {
+    I.setLanguage("xyz");
     assertNotNull(I.getCurrentLanguage().translation);
-    assertTrue(LanguageSetting.emptyLanguageBundle == I.getCurrentLanguage().translation);
   }
 
   @Test
-  public void testTranslations() {
+  public void basic_translations_are_found() {
     I.setLanguage("en");
-    assertEquals("ZIP CODE", I.tr("ZIP CODE"));
+    assertEquals("Add", I.tr("Add"));
     I.setLanguage("fr");
-    assertEquals("CODE POSTAL", I.tr("ZIP CODE"));
+    assertEquals("Ajouter", I.tr("Add"));
     I.setLanguage("en_AU");
-    assertEquals("POSTAL CODE", I.tr("ZIP CODE"));
+    assertEquals("Put it", I.tr("Add"));
+  }
+
+  @Test
+  public void the_default_escape_mechanism_is_empty() {
+    assertTrue(I.defaultEscapeFunction == EscapeFunction.NoEscape);
   }
 
   @Test
@@ -177,7 +186,11 @@ public class TestI18N {
   public void setupNullDate() {
     I.setNullDateTest(new BooleanFunction<Date>() {
       public boolean apply(Date obj) {
-        return obj == null || (c.get(Calendar.YEAR) == NULL_YEAR);
+        if (obj == null)
+          return true;
+        Calendar c = Calendar.getInstance();
+        c.setTime(obj);
+        return (c.get(Calendar.YEAR) == NULL_YEAR);
       }
     });
     I.setDefaultDate(myNullDate);
@@ -271,13 +284,13 @@ public class TestI18N {
   }
 
   @Test
-  public void preferred_date_format_uses_current_locale_for_date_formatting() {
+  public void preferred_date_format_returns_localized_default_for_current_locale() {
     I.setLanguage("en");
-    assertEquals("M/d/yy", I.preferredDateFormat());
+    assertEquals("MM/dd/yyyy", I.preferredDateFormat());
     I.setLanguage("fr_FR");
-    assertEquals("dd/MM/yy", I.preferredDateFormat());
+    assertEquals("jj/MM/aaaa", I.preferredDateFormat());
     I.setLanguage("de_DE");
-    assertEquals("dd.MM.yy", I.preferredDateFormat());
+    assertEquals("tt.MM.uuuu", I.preferredDateFormat());
   }
 
   @Test
@@ -287,10 +300,10 @@ public class TestI18N {
   }
 
   @Test
-  public void preferred_date_format_is_empty_for_undefined_format_ids() {
+  public void preferred_date_format_is_short_for_undefined_format_ids() {
     final int undefinedFormat = 12398745;
     I.setLanguage("en");
-    assertEquals("", I.preferredDateFormat(undefinedFormat));
+    assertEquals("M/d/yy", I.preferredDateFormat(undefinedFormat));
   }
 
   @Test
@@ -583,7 +596,7 @@ public class TestI18N {
 
   @Test
   public void testCustomDateFormats() {
-    Date d = makeDate(2, 5, 2001);
+    Date d = makeDate(5, 2, 2001);
     I.setLanguage("en");
     assertEquals("05/02/2001", I.dateToString(d, TU_STANDARD_DATE_TYPE));
     assertEquals("", I.dateToString(null, TU_STANDARD_DATE_TYPE));
@@ -755,7 +768,7 @@ public class TestI18N {
 
   @Test
   public void testTimestampOutput() {
-    Date d = new Date(111, 2, 4, 23, 37, 10);
+    Date d = makeTimestamp(3, 4, 2011, 23, 37, 10);
     I.setLanguage("en");
     assertEquals("03/04/2011 11:37:10 PM", I.timestampToString(d));
     assertEquals("03/04/2011 11:37 PM", I.timestampToString(d, false, false));
@@ -895,6 +908,10 @@ public class TestI18N {
     c.set(Calendar.YEAR, year);
     c.set(Calendar.MONTH, month - 1);
     c.set(Calendar.DAY_OF_MONTH, day);
+    c.set(Calendar.HOUR_OF_DAY, 0);
+    c.set(Calendar.MINUTE, 0);
+    c.set(Calendar.SECOND, 0);
+    c.set(Calendar.MILLISECOND, 0);
     return c.getTime();
   }
 

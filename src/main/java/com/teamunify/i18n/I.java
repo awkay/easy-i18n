@@ -25,7 +25,6 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.teamunify.i18n.escape.EscapeFunction;
-import com.teamunify.i18n.escape.HTMLEscapeFunction;
 import com.teamunify.i18n.settings.DateFormatVendor;
 import com.teamunify.i18n.webapp.ServletLocaleFilter;
 import com.teamunify.i18n.wiki.SimpleWikifier;
@@ -119,15 +118,21 @@ public final class I {
    * needs to look up the translation, but need not apply any extra formatting.
    *
    * @param msg The english-language message (which will also be the default if there is no translation).
-   * @return The translated string, or msg if there is none.
+   * @return The translated string, or msg if there is none escaped via the default escape mechanism.
    */
   public static String tr(String msg) {
-    return escape(tru(msg));
+    return escapeFunction.escape(tru(msg));
   }
 
   /**
-   * Translate a string, but do NOT escape any character entities for HTML. This is useful when embedding translations
-   * into javascript.
+   * Same as tr, but use the specified escape function.
+   */
+  public static String tr(String msg, EscapeFunction f) {
+    return f.escape(tru(msg));
+  }
+
+  /**
+   * Translate a string, but do NOT escape it. This is shorthand for tr("msg", EscapeFunction.NoEscape).
    *
    * @param msg The string to translate.
    * @return The translated string.
@@ -139,7 +144,8 @@ public final class I {
 
   /**
    * Translate a message with wiki markup. These are separate functions that allow you to take the overhead of
-   * translating wiki markup only when needed.
+   * translating wiki markup only when needed. The translated message is escaped by your escape function, but
+   * the wikifier's output, of course, is not.
    * <p/>
    * The supported wiki markup is documented in the wikified() function.
    * <p/>
@@ -151,6 +157,13 @@ public final class I {
    */
   public static String trw(String msg) {
     return wikified(tr(msg));
+  }
+
+  /**
+   * Same as trw, but with custom escape function.
+   */
+  public static String trw(String msg, EscapeFunction f) {
+    return wikified(tr(msg, f));
   }
 
   /**
@@ -171,8 +184,15 @@ public final class I {
    * @return The translated message, or msg if there is none.
    */
   public static String trc(String context, String msg) {
+    return trc(context, msg, escapeFunction);
+  }
+
+  /**
+   * Same as trc, but with custom escape function.
+   */
+  public static String trc(String context, String msg, EscapeFunction f) {
     LanguageSetting s = languageProvider.vend();
-    return escape(GettextResource.pgettext(s.translation, context, msg));
+    return f.escape(GettextResource.pgettext(s.translation, context, msg));
   }
 
   /**
@@ -181,7 +201,11 @@ public final class I {
    * @see I#wikified
    */
   public static String trcw(String context, String src) {
-    return wikified(trc(context, src));
+    return wikified(trc(context, src, escapeFunction));
+  }
+
+  public static String trcw(String context, String src, EscapeFunction f) {
+    return wikified(trc(context, src, f));
   }
 
   /**
@@ -191,6 +215,10 @@ public final class I {
    */
   public static String trcfw(String context, String src, Object... args) {
     return wikified(trcf(context, src, args));
+  }
+
+  public static String trcfw(EscapeFunction f, String context, String src, Object... args) {
+    return wikified(trcf(f, context, src, args));
   }
 
   /**
@@ -224,15 +252,15 @@ public final class I {
    * @see java.text.MessageFormat
    */
   public static String trf(String msg, Object... args) {
-    return escape(trfu(msg, args));
+    return trf(escapeFunction, msg, args);
+  }
+
+  public static String trf(EscapeFunction f, String msg, Object... args) {
+    return f.escape(trfu(msg, args));
   }
 
   /**
-   * Exactly like trf, but does not escape HTML entities. Useful in javascript where nested quoting is a problem.
-   *
-   * @param msg
-   * @param args
-   * @return
+   * Alias for trf(EscapeFunction.NoEscape, msg, args)
    */
   public static String trfu(String msg, Object... args) {
     LanguageSetting s = languageProvider.vend();
@@ -247,7 +275,11 @@ public final class I {
    * @see I#trf(String, Object...)
    */
   public static String trfw(String src, Object... args) {
-    return wikified(trf(src, args));
+    return trfw(escapeFunction, src, args);
+  }
+
+  public static String trfw(EscapeFunction f, String src, Object... args) {
+    return wikified(trf(f, src, args));
   }
 
   /**
@@ -261,10 +293,14 @@ public final class I {
    * @see I#trf(String, Object...)
    */
   public static String trcf(String context, String msg, Object... args) {
+    return trcf(escapeFunction, context, msg, args);
+  }
+
+  public static String trcf(EscapeFunction f, String context, String msg, Object... args) {
     LanguageSetting s = languageProvider.vend();
     String xlation = GettextResource.pgettext(s.translation, context, msg);
     s.formatter.applyPattern(xlation);
-    return escape(s.formatter.format(args));
+    return f.escape(s.formatter.format(args));
   }
 
   /**
@@ -291,14 +327,22 @@ public final class I {
    * @see I#wikified
    */
   public static String tr_plural(String singular, String plural, int nitems_for_plural_determination, Object... args) {
+    return tr_plural(escapeFunction, singular, plural, nitems_for_plural_determination, args);
+  }
+
+  public static String tr_plural(EscapeFunction f, String singular, String plural, int nitems_for_plural_determination, Object... args) {
     LanguageSetting s = languageProvider.vend();
     String xlation = GettextResource.ngettext(s.translation, singular, plural, nitems_for_plural_determination);
     s.formatter.applyPattern(xlation);
-    return escape(s.formatter.format(args));
+    return f.escape(s.formatter.format(args));
   }
 
   public static String tr_pluralw(String singular, String plural, int nitems_for_plural_determination, Object... args) {
     return wikified(tr_plural(singular, plural, nitems_for_plural_determination, args));
+  }
+
+  public static String tr_pluralw(EscapeFunction f, String singular, String plural, int nitems_for_plural_determination, Object... args) {
+    return wikified(tr_plural(f, singular, plural, nitems_for_plural_determination, args));
   }
 
   /**
@@ -632,17 +676,9 @@ public final class I {
     return numberToCurrencyString(damount, true);
   }
 
-  /**
-   * Get a locale-specific string representing the amount of currency provided. This is identical to
-   * numberToCurrencyString(Number), but allows you to turn off the currency symbol.
-   *
-   * @param damount       The amount
-   * @param bCurrencySign whether to include the currency symbol in the string.
-   * @return The currency string.
-   */
-  public static String numberToCurrencyString(Number damount, boolean bCurrencySign) {
+  public static String numberToCurrencyString(Number damount, boolean bCurrencySign, EscapeFunction f) {
     LanguageSetting s = languageProvider.vend();
-    String rv = "";
+    String rv;
     DecimalFormat d = (DecimalFormat) NumberFormat.getCurrencyInstance(s.locale);
     if (damount.doubleValue() < 0) {
       if (d.getNegativePrefix().contains("("))
@@ -659,7 +695,19 @@ public final class I {
     }
     rv = d.format(damount.doubleValue());
     rv.replace((char) 160, ' ');
-    return escape(rv);
+    return f.escape(rv);
+  }
+
+  /**
+   * Get a locale-specific string representing the amount of currency provided. This is identical to
+   * numberToCurrencyString(Number), but allows you to turn off the currency symbol.
+   *
+   * @param damount       The amount
+   * @param bCurrencySign whether to include the currency symbol in the string.
+   * @return The currency string.
+   */
+  public static String numberToCurrencyString(Number damount, boolean bCurrencySign) {
+    return numberToCurrencyString(damount, bCurrencySign, escapeFunction);
   }
 
   /**
@@ -1338,12 +1386,8 @@ public final class I {
     escapeFunction = f;
   }
 
-  private static EscapeFunction escapeFunction = new HTMLEscapeFunction();
-
-  protected static String escape(String s) {
-    return escapeFunction.escape(s);
-  }
-
+  static final EscapeFunction defaultEscapeFunction = EscapeFunction.NoEscape;
+  private static EscapeFunction escapeFunction = defaultEscapeFunction;
   private static Wikifier wikiEngine = new SimpleWikifier();
 
   /**
