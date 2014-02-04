@@ -1,7 +1,7 @@
 package com.teamunify.i18n.com.teamunify.i18n.webapp;
 
 import com.teamunify.i18n.I;
-import com.teamunify.i18n.webapp.ServletLocaleFilter;
+import com.teamunify.i18n.webapp.AbstractLocaleFilter;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,7 +16,7 @@ public class ServletLocaleFilterTests {
   private static Locale computedLocale;
   private static Locale defaultLocale;
 
-  Filter f = new ServletLocaleFilter() {
+  Filter f = new AbstractLocaleFilter() {
     @Override
     public Locale getLocale(ServletRequest req) {
       return computedLocale;

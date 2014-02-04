@@ -29,6 +29,7 @@ public class ITests {
    * This is a custom date format ID.
    */
   public static final int TU_STANDARD_DATE_TYPE = 100;
+  public static final int NO_YEAR = 101;
 
   private static final Calendar c = Calendar.getInstance();
   private static final int NULL_YEAR = 1930;
@@ -49,6 +50,10 @@ public class ITests {
     I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "en", "AU", "dd/MM/yyyy", true);
     I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "fr", "", "dd/MM/yyyy", true);
     I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "de", "", "dd.MM.yyyy", true);
+    I.addCustomDateFormat(NO_YEAR, "en", "", "MM/dd", false);
+    I.addCustomDateFormat(NO_YEAR, "en", "AU", "d/M", false);
+    I.addCustomDateFormat(NO_YEAR, "fr", "", "dd/MM", false);
+    I.addCustomDateFormat(NO_YEAR, "de", "", "dd.MM", false);
 
     I.setDefaultDateFormat("en", "", "MM/dd/yyyy");
     I.setDefaultDateFormat("en", "AU", "dd/MM/yyyy");
@@ -916,6 +921,22 @@ public class ITests {
     I.setLanguage("de");
     assertEquals("Februar", I.monthName(Calendar.FEBRUARY, false));
     assertEquals("Feb", I.monthName(Calendar.FEBRUARY, true));
+  }
+
+  @Test
+  public void can_make_iso_date_strings() {
+    assertEquals("1992-03-05", I.dateToISOString(makeDate(3,5,1992)));
+  }
+
+  @Test
+  public void can_format_dates_with_custom_format_by_locale() {
+    Date d = makeDate(3, 5, 2013);
+    I.setLanguage("en_AU");
+    assertEquals("5/3", I.dateToString(d, NO_YEAR));
+    I.setLanguage("en");
+    assertEquals("03/05", I.dateToString(d, NO_YEAR));
+    I.setLanguage("de");
+    assertEquals("05.03", I.dateToString(d, NO_YEAR));
   }
 
   private Date makeDate(int month, int day, int year) {

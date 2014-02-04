@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * </p>
  *
  * @author tonykay
- * @see com.teamunify.i18n.webapp.ServletLocaleFilter
+ * @see com.teamunify.i18n.webapp.AbstractLocaleFilter
  */
 public final class LanguageSetting {
   private static Logger log = LoggerFactory.getLogger(LanguageSetting.class);

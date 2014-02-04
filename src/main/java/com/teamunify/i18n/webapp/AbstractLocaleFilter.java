@@ -15,13 +15,9 @@ import com.teamunify.i18n.I;
 
 /**
  * Reads the browser's preferred locale, checks the session, and sets the language based upon it.
- * <p/>
- * TODO: TuProp defaults.
- *
- * @author tonykay
  */
-public abstract class ServletLocaleFilter implements Filter {
-  private static Logger log = LoggerFactory.getLogger(ServletLocaleFilter.class);
+public abstract class AbstractLocaleFilter implements Filter {
+  private static Logger log = LoggerFactory.getLogger(AbstractLocaleFilter.class);
 
   public void destroy() {
   }

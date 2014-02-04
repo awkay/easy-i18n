@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.teamunify.i18n.escape.EscapeFunction;
 import com.teamunify.i18n.settings.DateFormatVendor;
-import com.teamunify.i18n.webapp.ServletLocaleFilter;
 import com.teamunify.i18n.wiki.SimpleWikifier;
 import com.teamunify.i18n.wiki.Wikifier;
 
@@ -40,7 +39,7 @@ import com.teamunify.i18n.wiki.Wikifier;
  * <li>Uses GNU gettext java library (libintl.jar) to pull messages from ResourceBundle classes
  * <li>The ResourceBundle classes are <b>generated</b> by the GNU utility msgfmt, and are packaged up into a JAR file by
  * the build process for deployment. They are in gen/ on the project during development.
- * <li>The ServletLocaleFilter is responsible for putting the resource bundle in a place that the translation functions
+ * <li>The AbstractLocaleFilter is responsible for putting the resource bundle in a place that the translation functions
  * can find it automatically (thread local variable).
  * <li>MessageFormat is used underneath for date, time, currency, and number formatting. @see java.text.MessageFormat.
  * </ul>
@@ -84,9 +83,9 @@ import com.teamunify.i18n.wiki.Wikifier;
  *
  * @author tonykay
  * @see java.text.MessageFormat
- * @see ServletLocaleFilter
+ * @see com.teamunify.i18n.webapp.AbstractLocaleFilter
  * @see ThreadLocalLanguageSetting
- * @see ServletLocaleFilter
+ * @see com.teamunify.i18n.webapp.AbstractLocaleFilter
  */
 public final class I {
   private static BooleanFunction<Date> nullDateTest = new BooleanFunction<Date>() {
@@ -346,16 +345,23 @@ public final class I {
   }
 
   /**
-   * Set the current language. In a webapp, this is typically done via the ServletLocaleFilter. In other places (e.g.
+   * Set the current language. In a webapp, this is typically done via the AbstractLocaleFilter. In other places (e.g.
    * applications, cron jobs, etc.), you will likely need to set this in main.
    *
    * @param name The language code (two letters, followed by optional _ and two-letter country). E.g. en es de en_US en_AU.
    *             IF YOU DROP THE COUNTRY, IT WILL DEFAULT TO US.
    */
   public static void setLanguage(String name) {
+    setLanguage(getLocale(name));
+  }
+
+  /**
+   * Get a locale using the lang_country code (e.g. en_US).
+   */
+  public static Locale getLocale(String name) {
     final String langOnly = name != null && name.contains("_") ? name.substring(0, 2) : name;
     final String countryOnly = name != null && name.contains("_") ? name.substring(3) : "US";
-    setLanguage(new Locale(langOnly, countryOnly));
+    return new Locale(langOnly, countryOnly);
   }
 
   public static void setLanguage(Locale l) {
@@ -1289,6 +1295,12 @@ public final class I {
     if (date == null)
       return "";
     return MessageFormat.format("{0,date,yyyy-MM-dd} {0,time,HH:mm:ss.S}", date);
+  }
+
+  public static String dateToISOString(Date date) {
+    if (date == null)
+      return "";
+    return new SimpleDateFormat("yyyy-MM-dd").format(date);
   }
 
   /**
