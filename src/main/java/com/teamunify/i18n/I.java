@@ -457,19 +457,6 @@ public final class I {
   }
 
   /**
-   * A handy function to set the default date output type to SHORT
-   *
-   * @param d The date to format
-   * @return the locale-corrected string version of the date.
-   */
-  public static String dateToShortString(Date d) {
-    if (isNullDate(d))
-      return "";
-    else
-      return dateToString(d, DateFormatVendor.DEFAULT_DATE_FORMAT_ID);
-  }
-
-  /**
    * Convert a date object (which holds significant time as well) to a string that includes the date and time.
    *
    * @param d The date
@@ -597,7 +584,7 @@ public final class I {
 
     LanguageSetting s = languageProvider.vend();
     for (DateFormat fmt : new DateFormat[] { s.getLongTimeFormat(), s.getShortTimeFormat(),
-                                             s.getMilitaryTimeFormat(true), s.getMilitaryTimeFormat(false) }) {
+                                             s.getMilitaryTimeFormat(true), s.getMilitaryTimeFormat(false), s.getAccurateTimeFormat(), s.getCompactMilitaryTimeFormat() }) {
       try {
         timeDate = fmt.parse(timeString);
         break;
@@ -1313,13 +1300,13 @@ public final class I {
    * @return A String version of it.
    */
   public static String timestampToISOString(Date date) {
-    if (date == null)
+    if (isNullDate(date))
       return "";
     return MessageFormat.format("{0,date,yyyy-MM-dd} {0,time,HH:mm:ss.S}", date);
   }
 
   public static String dateToISOString(Date date) {
-    if (date == null)
+    if (isNullDate(date))
       return "";
     return new SimpleDateFormat("yyyy-MM-dd").format(date);
   }
@@ -1366,12 +1353,11 @@ public final class I {
   /**
    * Test if the given Date object is what we consider to be the NULL date...
    * <p/>
-   * FIXME: More general mechanism would be nice...
    *
    * @param d
    */
   public static boolean isNullDate(Date d) {
-    return nullDateTest.apply(d);
+    return d == null || nullDateTest.apply(d);
   }
 
   public static BooleanFunction<Date> getNullDateTest() {

@@ -779,16 +779,19 @@ public class ITests {
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("03/04/11 11:37 pm", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 23:37:10", null), true));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 23:37", null), false));
+    assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 2337", null), false));
     I.setLanguage("fr_FR");
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("4/3/11 11:37 pm", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("04/03/11 11:37 pm", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 23:37:10", null), true));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 23:37", null), false));
+    assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 2337", null), false));
     I.setLanguage("de_DE");
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("4.3.11 11:37 pm", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("04.03.11 11:37 pm", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 23:37:10", null), true));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 23:37", null), false));
+    assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 2337", null), false));
   }
 
   @Test
@@ -951,6 +954,8 @@ public class ITests {
     setupNullDate();
     assertEquals("", I.dateToString(myNullDate));
     assertEquals("", I.timestampToString(myNullDate));
+    assertEquals("", I.dateToISOString(myNullDate));
+    assertEquals("", I.timestampToISOString(myNullDate));
     restoreNullDate();
     assertEquals("", I.dateToString(null));
     assertEquals("", I.timestampToString(null));
@@ -971,6 +976,13 @@ public class ITests {
     Date dtEnd = I.stringToTimestamp("1/4/1986 11:24 PM", null);
     assertNotNull(dtEnd);
     assertTrue(areEqualTimestamps(expected, dtEnd, false));
+  }
+
+  @Test
+  public void iso_timestamp_conversion_is_accurate_to_ms() {
+    Date someWeirdDate = new Date(1305982733L);
+    assertEquals("1970-01-15 18:46:22.733", I.timestampToISOString(someWeirdDate));
+    assertEquals(122, I.ISOTimestampToDate("2009-04-03 12:59:33.122", new Date()).getTime() % 1000);
   }
 
   private Date makeDate(int month, int day, int year) {

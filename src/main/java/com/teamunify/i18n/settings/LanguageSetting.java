@@ -133,4 +133,12 @@ public final class LanguageSetting {
   public DateFormat getMilitaryTimeFormat(boolean withSeconds) {
     return withSeconds ? new SimpleDateFormat("H:m:s") : new SimpleDateFormat("H:m");
   }
+
+  public DateFormat getCompactMilitaryTimeFormat() {
+    return new SimpleDateFormat("HHmm");
+  }
+
+  public DateFormat getAccurateTimeFormat() {
+    return new SimpleDateFormat("H:m:s.S");
+  }
 }
