@@ -962,6 +962,21 @@ public class ITests {
   }
 
   @Test
+  public void date_inputs_missing_the_year_map_to_this_year() {
+    I.setLanguage(Locale.US);
+    Calendar c = Calendar.getInstance();
+    c.set(Calendar.MONTH, Calendar.MARCH);
+    c.set(Calendar.DAY_OF_MONTH, 4);
+    assertEquals(I.dateToISOString(c.getTime()), I.dateToISOString(I.stringToDate("3/4")));
+
+    I.setLanguage(Locale.FRANCE);
+    assertEquals(I.dateToISOString(c.getTime()), I.dateToISOString(I.stringToDate("4/3")));
+
+    I.setLanguage(Locale.GERMANY);
+    assertEquals(I.dateToISOString(c.getTime()), I.dateToISOString(I.stringToDate("4.3")));
+  }
+
+  @Test
   public void null_strings_as_dates_are_converted_to_the_null_date() {
     setupNullDate();
     assertEquals(myNullDate, I.stringToDate(null));

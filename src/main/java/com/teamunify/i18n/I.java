@@ -457,6 +457,19 @@ public final class I {
   }
 
   /**
+   * A handy function to set the default date output type to SHORT
+   *
+   * @param d The date to format
+   * @return the locale-corrected string version of the date.
+   */
+  public static String dateToShortString(Date d) {
+    if (isNullDate(d))
+      return "";
+    else
+      return dateToString(d, DateFormat.SHORT);
+  }
+
+  /**
    * Convert a date object (which holds significant time as well) to a string that includes the date and time.
    *
    * @param d The date
@@ -525,9 +538,21 @@ public final class I {
         e = e1;
       }
     }
+
+    // See if the user just forgot to tack on the year
+    Calendar c = Calendar.getInstance();
+    String year = String.format("%04d", c.get(Calendar.YEAR));
+    if (!source.endsWith(year)) {
+      if (source.contains("/"))
+        return stringToDate(source + "/" + year);
+      else if (source.contains("."))
+        return stringToDate(source + "." + year);
+    }
+
     if (log.isDebugEnabled())
       log.debug(String.format("Failed to parse date >%s< when using language settings for %s", source,
         s.locale.getLanguage()), e);
+
     return rv;
   }
 
