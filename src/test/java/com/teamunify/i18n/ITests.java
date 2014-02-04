@@ -4,6 +4,7 @@ import com.teamunify.i18n.escape.EscapeFunction;
 import com.teamunify.i18n.settings.BooleanFunction;
 import com.teamunify.i18n.settings.GlobalLanguageSettingsProvider;
 import com.teamunify.i18n.settings.LanguageSetting;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -44,7 +45,7 @@ public class ITests {
   private static final Date nulldatePlusSome = new Date(myNullDate.getTime() + 103295);
 
   @BeforeClass
-  public static void setup() {
+  public static void csetup() {
     I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "en", "", "MM/dd/yyyy", true);
     I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "en", "US", "MM/dd/yyyy", true);
     I.addCustomDateFormat(TU_STANDARD_DATE_TYPE, "en", "AU", "dd/MM/yyyy", true);
@@ -59,6 +60,12 @@ public class ITests {
     I.setDefaultDateFormat("en", "AU", "dd/MM/yyyy");
     I.setDefaultDateFormat("fr", "", "dd/MM/yyyy");
     I.setDefaultDateFormat("de", "", "dd.MM.yyyy");
+  }
+
+  @Before
+  public void setup() {
+    I.setLanguage(Locale.US);
+    restoreNullDate();
   }
 
   @Test
@@ -937,6 +944,25 @@ public class ITests {
     assertEquals("03/05", I.dateToString(d, NO_YEAR));
     I.setLanguage("de");
     assertEquals("05.03", I.dateToString(d, NO_YEAR));
+  }
+
+  @Test
+  public void the_null_date_always_formats_to_an_empty_string() {
+    setupNullDate();
+    assertEquals("", I.dateToString(myNullDate));
+    assertEquals("", I.timestampToString(myNullDate));
+    restoreNullDate();
+    assertEquals("", I.dateToString(null));
+    assertEquals("", I.timestampToString(null));
+  }
+
+  @Test
+  public void null_strings_as_dates_are_converted_to_the_null_date() {
+    setupNullDate();
+    assertEquals(myNullDate, I.stringToDate(null));
+    restoreNullDate();
+    assertEquals(null, I.stringToDate(null));
+
   }
 
   @Test

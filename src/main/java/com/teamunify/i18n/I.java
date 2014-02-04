@@ -501,8 +501,8 @@ public final class I {
     LanguageSetting s = languageProvider.vend();
     DateFormat dFormatter = dateFormatVendor.getFormatFor(dateFmtID, s.locale, DateFormat.SHORT);
     String strTime =
-        (showSeconds ? s.getLongTimeFormat().format(d) : s.getShortTimeFormat().format(d))
-        + (showTimezone ? " " + getTimeZone().getDisplayName(getTimeZone().inDaylightTime(d), TimeZone.SHORT) : "");
+      (showSeconds ? s.getLongTimeFormat().format(d) : s.getShortTimeFormat().format(d))
+      + (showTimezone ? " " + getTimeZone().getDisplayName(getTimeZone().inDaylightTime(d), TimeZone.SHORT) : "");
     if (timeOnly)
       return strTime;
     else
@@ -540,7 +540,7 @@ public final class I {
     }
     if (log.isDebugEnabled())
       log.debug(String.format("Failed to parse date >%s< when using language settings for %s", source,
-          s.locale.getLanguage()), e);
+        s.locale.getLanguage()), e);
     return rv;
   }
 
@@ -587,6 +587,12 @@ public final class I {
    */
   @SuppressWarnings("deprecation")
   public static Date stringToTime(Date refDate, String timeString) {
+    if (isNullDate(refDate)) {
+      if (defaultDate == null)
+        refDate = new Date();
+      else
+        refDate = defaultDate;
+    }
     Date timeDate = new Date(0, 0, 0, 0, 0, 0);
 
     LanguageSetting s = languageProvider.vend();
@@ -599,7 +605,7 @@ public final class I {
     }
 
     return new Date(refDate.getYear(), refDate.getMonth(), refDate.getDate(), timeDate.getHours(),
-        timeDate.getMinutes(), timeDate.getSeconds());
+      timeDate.getMinutes(), timeDate.getSeconds());
   }
 
   /**
@@ -1224,11 +1230,11 @@ public final class I {
   public static String localizedStringsAsList(String preTranslatedWords[], boolean inclusive) {
     String comma = I.trc("The separator for lists in a sentence (e.g. a, b, and c)", ",");
     String justTwo =
-        inclusive ? I.trc("a list in a sentence with more exactly two things", "{0} and {1}")
-            : I.trc("a list of options in a sentence with exactly two things", "{0} or {1}");
+      inclusive ? I.trc("a list in a sentence with more exactly two things", "{0} and {1}")
+        : I.trc("a list of options in a sentence with exactly two things", "{0} or {1}");
     String compoundList =
-        inclusive ? I.trc("ending of list in a sentence with three or more things", "{0}, and {1}")
-            : I.trc("ending of list of options in a sentence with three or more things", "{0}, or {1}");
+      inclusive ? I.trc("ending of list in a sentence with three or more things", "{0}, and {1}")
+        : I.trc("ending of list of options in a sentence with three or more things", "{0}, or {1}");
 
     if (preTranslatedWords == null || preTranslatedWords.length == 0)
       return "";
