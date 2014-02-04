@@ -107,9 +107,24 @@ public final class I {
    * @param altFormatID The DateFormat format you'll accept if formatID is not found for the current Locale
    * @return The format, or null if neither the primary or secondary can be found.
    */
-  public static DateFormat getDateFormatter(int formatID, int altFormatID) {
+  public static DateFormat getDateFormat(int formatID, int altFormatID) {
     LanguageSetting provider = languageProvider.vend();
     return dateFormatVendor.getFormatFor(formatID, provider.locale, altFormatID);
+  }
+
+  /**
+   * Get the pattern used by the given date format.
+   *
+   * @param formatID    The formatID
+   * @param altFormatID An alternate
+   * @return The pattern (always returns a pattern, SHORT if none found).
+   */
+  public static String getDateFormatter(int formatID, int altFormatID) {
+    return ((SimpleDateFormat) getDateFormat(formatID, altFormatID)).toPattern();
+  }
+
+  public static String getDateFormatter(int formatID) {
+    return ((SimpleDateFormat) getDateFormat(formatID, DateFormat.SHORT)).toPattern();
   }
 
   /**
@@ -1382,6 +1397,13 @@ public final class I {
     return defaultDate;
   }
 
+  /**
+   * Set the default date returned from functions when they fail to parse dates.
+   * <p/>
+   * NOT THREAD SAFE!
+   *
+   * @param defaultDate
+   */
   public static void setDefaultDate(Date defaultDate) {
     I.defaultDate = defaultDate;
   }

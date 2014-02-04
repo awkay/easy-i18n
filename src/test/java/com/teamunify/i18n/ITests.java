@@ -925,7 +925,7 @@ public class ITests {
 
   @Test
   public void can_make_iso_date_strings() {
-    assertEquals("1992-03-05", I.dateToISOString(makeDate(3,5,1992)));
+    assertEquals("1992-03-05", I.dateToISOString(makeDate(3, 5, 1992)));
   }
 
   @Test
@@ -937,6 +937,14 @@ public class ITests {
     assertEquals("03/05", I.dateToString(d, NO_YEAR));
     I.setLanguage("de");
     assertEquals("05.03", I.dateToString(d, NO_YEAR));
+  }
+
+  @Test
+  public void accepts_am_pm_designation_on_timestamps() {
+    Date expected = makeTimestamp(1, 4, 1986, 23, 24, 0);
+    Date dtEnd = I.stringToTimestamp("1/4/1986 11:24 PM", null);
+    assertNotNull(dtEnd);
+    assertTrue(areEqualTimestamps(expected, dtEnd, false));
   }
 
   private Date makeDate(int month, int day, int year) {
