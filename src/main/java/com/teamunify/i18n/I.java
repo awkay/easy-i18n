@@ -1031,7 +1031,8 @@ public final class I {
   public static double roundCurrency(double unroundedNumber) {
     int scale = getCurrencyFractionDigits();
     double divisor = scale > 0 ? (int) Math.pow(10, scale) : 1.0;
-    return Math.round(unroundedNumber * divisor) / divisor;
+    // add in a fudge factor, or some boundary conditions round in the wrong direction
+    return Math.round(unroundedNumber * divisor + 0.00001) / divisor;
   }
 
   /**

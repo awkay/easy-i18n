@@ -732,6 +732,23 @@ public class ITests {
     assertEquals("123984.51", Double.toString(I.roundCurrency(d)));
     I.setLanguage("de_DE");
     assertEquals("123984.51", Double.toString(I.roundCurrency(d)));
+
+    // rounding right at the border
+    d = 123984.505;
+    I.setLanguage("en");
+    assertEquals("123984.51", Double.toString(I.roundCurrency(d)));
+    I.setLanguage("fr_FR");
+    assertEquals("123984.51", Double.toString(I.roundCurrency(d)));
+    I.setLanguage("de_DE");
+    assertEquals("123984.51", Double.toString(I.roundCurrency(d)));
+
+    d = 10.155;
+    I.setLanguage("en");
+    assertEquals("10.16", Double.toString(I.roundCurrency(d)));
+    I.setLanguage("fr_FR");
+    assertEquals("10.16", Double.toString(I.roundCurrency(d)));
+    I.setLanguage("de_DE");
+    assertEquals("10.16", Double.toString(I.roundCurrency(d)));
   }
 
   @Test
