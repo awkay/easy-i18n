@@ -14,11 +14,8 @@ import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Currency;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -96,6 +93,45 @@ public final class I {
   private static Date defaultDate = null;
   private static Logger log = LoggerFactory.getLogger(I.class);
   private static LanguageSettingsProvider languageProvider = new ThreadLocalLanguageSettingsProvider();
+
+  private static ConcurrentHashMap<String, Locale> defaultLocales = new ConcurrentHashMap<String, Locale>();
+
+  /**
+   * Set the locale that should be returned from getDefaultLocaleForLanguage() when the specified (plain) language
+   * (without country) is given. Also affects getLocale(String).
+   * <p/>
+   * <p>
+   * This function does nothing if language is null.
+   * </p>
+   * <p>
+   * This function removes the mapping if the locale is null.
+   * </p>
+   *
+   * @param language The language code (e.g. "en", "fr", etc)
+   * @param locale   The Locale. You can map to an alternate language if you want, but it is not recommended. Passing
+   *                 null removes the mapping for that language.
+   */
+  public static void setDefaultLocaleForLanguage(String language, Locale locale) {
+    if (language == null)
+      return;
+    if (locale == null)
+      defaultLocales.remove(language);
+    else
+      defaultLocales.put(language, locale);
+  }
+
+  /**
+   * Get the default locale for a plain language (so that currency and other country-specific support will work properly).
+   *
+   * @param language The language
+   * @return A Locale for that language, with the country set to a default if there has been a prior call to setDefaultLocaleForLanguage() with that language.
+   */
+  public static Locale getDefaultLocaleForLanguage(String language) {
+    Locale rv = defaultLocales.get(language);
+    if (rv == null)
+      return new Locale(language);
+    return rv;
+  }
 
   /**
    * Get a date format object for the given format ID. DateFormat.{SHORT,MEDIUM,LONG} are guaranteed to work. If you
@@ -362,21 +398,51 @@ public final class I {
   /**
    * Set the current language. In a webapp, this is typically done via the AbstractLocaleFilter. In other places (e.g.
    * applications, cron jobs, etc.), you will likely need to set this in main.
+   * <p/>
+   * If no country portion is in the name, the defaults are used (I.setDefaultLocaleForLanguage)
    *
    * @param name The language code (two letters, followed by optional _ and two-letter country). E.g. en es de en_US en_AU.
-   *             IF YOU DROP THE COUNTRY, IT WILL DEFAULT TO US.
    */
   public static void setLanguage(String name) {
     setLanguage(getLocale(name));
   }
 
   /**
-   * Get a locale using the lang_country code (e.g. en_US).
+   * Get a locale using the lang_country code (e.g. en_US). If the country portion of name is missing, it uses the
+   * prior setting of default locale for language (setDefaultLocaleForLanguage(String, Locale))
+   *
+   * @param name The lang_country designator. "en_US", "fr_FR", etc. If the country is not supplied, an attempt will
+   *             be made to find a default (@see setDefaultLocaleForLanguage(String, Locale)
    */
   public static Locale getLocale(String name) {
     final String langOnly = name != null && name.contains("_") ? name.substring(0, 2) : name;
-    final String countryOnly = name != null && name.contains("_") ? name.substring(3) : "US";
-    return new Locale(langOnly, countryOnly);
+    String countryOnly = extractCountry(name, langOnly);
+
+    if (countryOnly.isEmpty()) {
+      if (defaultLocales.containsKey(langOnly))
+        return getDefaultLocaleForLanguage(langOnly);
+      return new Locale(langOnly);
+    } else
+      return new Locale(langOnly, countryOnly);
+  }
+
+  private static String extractCountry(String name, String language) {
+    String countryOnly = "";
+    countryOnly = name != null && name.contains("_") ? name.substring(3) : "";
+
+    if (!countryOnly.isEmpty()) {
+      boolean found = false;
+      for (Locale l : Locale.getAvailableLocales()) {
+        if (l.getCountry().equals(countryOnly)) {
+          found = true;
+          break;
+        }
+      }
+      if (!found)
+        return "";
+    }
+
+    return countryOnly;
   }
 
   public static void setLanguage(Locale l) {
@@ -695,13 +761,17 @@ public final class I {
   /**
    * Returns default fraction digits according to the locale.
    *
-   * @return The number of floating point digits.
+   * @return The number of floating point digits. IMPORTANT: Returns 2 if the Locale country is unknown.
    */
   public static int getCurrencyFractionDigits() {
-    LanguageSetting s = languageProvider.vend();
-    Currency c = Currency.getInstance(s.locale);
-    int scale = c.getDefaultFractionDigits();
-    return scale;
+    try {
+      LanguageSetting s = languageProvider.vend();
+      Currency c = Currency.getInstance(s.locale);
+      int scale = c.getDefaultFractionDigits();
+      return scale;
+    } catch (Exception e) {
+      return 2;
+    }
   }
 
   /**
