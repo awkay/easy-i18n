@@ -100,6 +100,12 @@ public class ITests {
   }
 
   @Test
+  public void base_language_translations_are_used_when_country_has_no_po_file() {
+    I.setLanguage("fr_FR");
+    assertEquals("Ajouter", I.tr("Add"));
+  }
+
+  @Test
   public void the_default_escape_mechanism_is_empty() {
     assertTrue(I.defaultEscapeFunction == EscapeFunction.NoEscape);
   }
