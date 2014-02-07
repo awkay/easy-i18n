@@ -1310,21 +1310,21 @@ public final class I {
    * I.tr("B") } -&gt; "A, B, and C". If you pass a null list or empty list, "" is returned. If you pass a list
    * with a single item, just that item is returned. Never returns null.
    */
-  public static String localizedStringsAsList(String preTranslatedWords[], boolean inclusive) {
-    String comma = I.trc("The separator for lists in a sentence (e.g. a, b, and c)", ",");
+  public static String localizedStringsAsList(String preTranslatedWords[], boolean inclusive, EscapeFunction f) {
+    String comma = I.trc("The separator for lists in a sentence (e.g. a, b, and c)", ",", f);
     String justTwo =
-      inclusive ? I.trc("a list in a sentence with more exactly two things", "{0} and {1}")
-        : I.trc("a list of options in a sentence with exactly two things", "{0} or {1}");
+      inclusive ? I.trc("a list in a sentence with more exactly two things", "{0} and {1}", f)
+        : I.trc("a list of options in a sentence with exactly two things", "{0} or {1}", f);
     String compoundList =
-      inclusive ? I.trc("ending of list in a sentence with three or more things", "{0}, and {1}")
-        : I.trc("ending of list of options in a sentence with three or more things", "{0}, or {1}");
+      inclusive ? I.trc("ending of list in a sentence with three or more things", "{0}, and {1}", f)
+        : I.trc("ending of list of options in a sentence with three or more things", "{0}, or {1}", f);
 
     if (preTranslatedWords == null || preTranslatedWords.length == 0)
       return "";
     if (preTranslatedWords.length == 1)
       return preTranslatedWords[0];
     if (preTranslatedWords.length == 2)
-      return I.trf(justTwo, preTranslatedWords[0], preTranslatedWords[1]);
+      return I.trf(f, justTwo, preTranslatedWords[0], preTranslatedWords[1]);
 
     StringBuilder mainList = new StringBuilder();
     int i = 0;
@@ -1336,7 +1336,11 @@ public final class I {
       }
     }
 
-    return I.trf(compoundList, mainList.toString(), preTranslatedWords[i]);
+    return I.trf(f, compoundList, mainList.toString(), preTranslatedWords[i]);
+  }
+
+  public static String localizedStringsAsList(String preTranslatedWords[], boolean inclusive) {
+    return localizedStringsAsList(preTranslatedWords, inclusive, escapeFunction);
   }
 
   /**
