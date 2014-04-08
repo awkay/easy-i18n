@@ -380,7 +380,8 @@ public final class I {
     return tr_plural(escapeFunction, singular, plural, nitems_for_plural_determination, args);
   }
 
-  public static String tr_plural(EscapeFunction f, String singular, String plural, int nitems_for_plural_determination, Object... args) {
+  public static String tr_plural(EscapeFunction f, String singular, String plural, int nitems_for_plural_determination,
+                                 Object... args) {
     LanguageSetting s = languageProvider.vend();
     String xlation = GettextResource.ngettext(s.translation, singular, plural, nitems_for_plural_determination);
     s.formatter.applyPattern(xlation);
@@ -391,7 +392,8 @@ public final class I {
     return wikified(tr_plural(singular, plural, nitems_for_plural_determination, args));
   }
 
-  public static String tr_pluralw(EscapeFunction f, String singular, String plural, int nitems_for_plural_determination, Object... args) {
+  public static String tr_pluralw(EscapeFunction f, String singular, String plural, int nitems_for_plural_determination,
+                                  Object... args) {
     return wikified(tr_plural(f, singular, plural, nitems_for_plural_determination, args));
   }
 
@@ -617,7 +619,7 @@ public final class I {
 
     if (log.isDebugEnabled())
       log.debug(String.format("Failed to parse date >%s< when using language settings for %s", source,
-        s.locale.getLanguage()), e);
+                              s.locale.getLanguage()), e);
 
     return rv;
   }
@@ -635,6 +637,14 @@ public final class I {
     String date;
     String time;
     source = source.trim();
+
+    Matcher ampmMatcher = jammedAmPm.matcher(source);
+
+    if (ampmMatcher.matches()) {
+      String ampm = source.substring(source.length() - 2);
+      source = source.substring(0, source.length() - 2) + " " + ampm;
+    }
+
     Matcher m = timestampPattern.matcher(source);
     if (m.matches()) {
       date = m.group(1);
@@ -652,6 +662,7 @@ public final class I {
   }
 
   private final static Pattern timestampPattern = Pattern.compile("^(.*)\\s+(\\d+:\\d+(?:\\d+)?(?:\\s*\\w+)?)$");
+  private final static Pattern jammedAmPm = Pattern.compile("^.*\\d[AaPp][Mm]$");
 
   /**
    * Given a reference date, set the time in it using the given string. E.g. treat the date as a pure date (no time),
@@ -675,7 +686,8 @@ public final class I {
 
     LanguageSetting s = languageProvider.vend();
     for (DateFormat fmt : new DateFormat[] { s.getLongTimeFormat(), s.getShortTimeFormat(),
-                                             s.getMilitaryTimeFormat(true), s.getMilitaryTimeFormat(false), s.getAccurateTimeFormat(), s.getCompactMilitaryTimeFormat() }) {
+                                             s.getMilitaryTimeFormat(true), s.getMilitaryTimeFormat(false),
+                                             s.getAccurateTimeFormat(), s.getCompactMilitaryTimeFormat() }) {
       try {
         timeDate = fmt.parse(timeString);
         break;
@@ -683,7 +695,7 @@ public final class I {
     }
 
     return new Date(refDate.getYear(), refDate.getMonth(), refDate.getDate(), timeDate.getHours(),
-      timeDate.getMinutes(), timeDate.getSeconds());
+                    timeDate.getMinutes(), timeDate.getSeconds());
   }
 
   /**
@@ -1314,10 +1326,10 @@ public final class I {
     String comma = I.trc("The separator for lists in a sentence (e.g. a, b, and c)", ",", f);
     String justTwo =
       inclusive ? I.trc("a list in a sentence with more exactly two things", "{0} and {1}", f)
-        : I.trc("a list of options in a sentence with exactly two things", "{0} or {1}", f);
+                : I.trc("a list of options in a sentence with exactly two things", "{0} or {1}", f);
     String compoundList =
       inclusive ? I.trc("ending of list in a sentence with three or more things", "{0}, and {1}", f)
-        : I.trc("ending of list of options in a sentence with three or more things", "{0}, or {1}", f);
+                : I.trc("ending of list of options in a sentence with three or more things", "{0}, or {1}", f);
 
     if (preTranslatedWords == null || preTranslatedWords.length == 0)
       return "";

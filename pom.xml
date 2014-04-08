@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.teamunify</groupId>
 	<artifactId>easy-i18n</artifactId>
-	<version>0.9.8-SNAPSHOT</version>
+	<version>0.9.9</version>
 	<packaging>jar</packaging>
 	<inceptionYear>2012</inceptionYear>
 

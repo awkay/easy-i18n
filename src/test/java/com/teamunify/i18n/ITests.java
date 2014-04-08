@@ -817,6 +817,8 @@ public class ITests {
   public void timestamp_input_is_tolerant_of_various_formats_in_all_locales() {
     Date d = makeTimestamp(3, 4, 2011, 23, 37, 10);
     I.setLanguage("en");
+    assertTrue(areEqualTimestamps(d, I.stringToTimestamp("3/4/11 11:37PM", null), false));
+    assertTrue(areEqualTimestamps(d, I.stringToTimestamp("3/4/11 11:37pm", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("3/4/11 11:37 PM", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("03/04/11 11:37 PM", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("Mar 4, 2011 11:37 PM", null), false));
@@ -832,12 +834,16 @@ public class ITests {
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 23:37", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 2337", null), false));
     I.setLanguage("fr_FR");
+    assertTrue(areEqualTimestamps(d, I.stringToTimestamp("4/3/11 11:37PM", null), false));
+    assertTrue(areEqualTimestamps(d, I.stringToTimestamp("04/03/11 11:37pm", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("4/3/11 11:37 pm", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("04/03/11 11:37 pm", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 23:37:10", null), true));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 23:37", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 2337", null), false));
     I.setLanguage("de_DE");
+    assertTrue(areEqualTimestamps(d, I.stringToTimestamp("4.3.11 11:37PM", null), false));
+    assertTrue(areEqualTimestamps(d, I.stringToTimestamp("4.3.11 11:37pm", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("4.3.11 11:37 pm", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("04.03.11 11:37 pm", null), false));
     assertTrue(areEqualTimestamps(d, I.stringToTimestamp("2011-03-04 23:37:10", null), true));
