@@ -814,6 +814,18 @@ public class ITests {
   }
 
   @Test
+  public void timestamp_input_is_tolerant_of_empty_strings() {
+    assertNull(I.stringToTimestamp("", null));
+  }
+
+  @Test
+  public void timestamp_input_is_tolerant_of_invalid_input() {
+    assertNull(I.stringToTimestamp("PM", null));
+    assertNull(I.stringToTimestamp("1PM", null));
+    assertNull(I.stringToTimestamp("1AM", null));
+  }
+
+  @Test
   public void timestamp_input_is_tolerant_of_various_formats_in_all_locales() {
     Date d = makeTimestamp(3, 4, 2011, 23, 37, 10);
     I.setLanguage("en");

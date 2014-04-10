@@ -638,6 +638,9 @@ public final class I {
     String time;
     source = source.trim();
 
+    if(source.length() < 2 || !source.contains(" "))
+      return defaultDate;
+
     Matcher ampmMatcher = jammedAmPm.matcher(source);
 
     if (ampmMatcher.matches()) {
