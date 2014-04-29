@@ -36,15 +36,20 @@ final public class DateFormatVendor {
       rv = DateFormat.getDateInstance(formatID, l);
     else {
       DFKey key = new DFKey(formatID, l);
-      rv = registry.get(key);
+      rv = clonedFormat(registry.get(key));
       if (rv == null)
-        rv = registry.get(key.withoutCountry());
+        rv = clonedFormat(registry.get(key.withoutCountry()));
       if (rv == null && formatID == DEFAULT_DATE_FORMAT_ID)
         return DateFormat.getDateInstance(DateFormat.SHORT, l);
     }
     if (rv == null)
       return getFormatFor(alternate, l, DateFormat.SHORT);
     return rv;
+  }
+
+  private DateFormat clonedFormat(DateFormat f) {
+    if(f == null) return null;
+    return (DateFormat)f.clone();
   }
 
   /**
@@ -113,7 +118,7 @@ final public class DateFormatVendor {
     dateParsers[3] = new SimpleDateFormat("yyyy-MM-dd", locale);
 
     for (int i = 0; i < customFormats.length; i++)
-      dateParsers[4 + i] = customFormats[i];
+      dateParsers[4 + i] = clonedFormat(customFormats[i]);
 
     return dateParsers;
   }

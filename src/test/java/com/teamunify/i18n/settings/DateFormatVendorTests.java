@@ -24,14 +24,18 @@ public class DateFormatVendorTests {
 
   @Test
   public void vendor_returns_built_in_formatter_for_short_medium_and_long_in_correct_locale() {
-    assertEquals(vendor.getFormatFor(DateFormat.SHORT, Locale.US, unknownFormat), DateFormat.getDateInstance(DateFormat.SHORT, Locale.US));
-    assertEquals(vendor.getFormatFor(DateFormat.MEDIUM, Locale.FRANCE, unknownFormat), DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.FRANCE));
-    assertEquals(vendor.getFormatFor(DateFormat.LONG, Locale.UK, unknownFormat), DateFormat.getDateInstance(DateFormat.LONG, Locale.UK));
+    assertEquals(vendor.getFormatFor(DateFormat.SHORT, Locale.US, unknownFormat),
+                 DateFormat.getDateInstance(DateFormat.SHORT, Locale.US));
+    assertEquals(vendor.getFormatFor(DateFormat.MEDIUM, Locale.FRANCE, unknownFormat),
+                 DateFormat.getDateInstance(DateFormat.MEDIUM, Locale.FRANCE));
+    assertEquals(vendor.getFormatFor(DateFormat.LONG, Locale.UK, unknownFormat),
+                 DateFormat.getDateInstance(DateFormat.LONG, Locale.UK));
   }
 
   @Test
   public void vendor_returns_short_formatter_for_correct_locale_when_asked_for_unknown() {
-    assertSameFormat(vendor.getFormatFor(unknownFormat, Locale.UK, unknownFormat), DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK));
+    assertSameFormat(vendor.getFormatFor(unknownFormat, Locale.UK, unknownFormat),
+                     DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK));
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -41,7 +45,8 @@ public class DateFormatVendorTests {
 
   @Test
   public void vendor_returns_alternate_when_primary_is_not_defined() {
-    assertSameFormat(vendor.getFormatFor(unknownFormat, Locale.UK, DateFormat.LONG), DateFormat.getDateInstance(DateFormat.LONG, Locale.UK));
+    assertSameFormat(vendor.getFormatFor(unknownFormat, Locale.UK, DateFormat.LONG),
+                     DateFormat.getDateInstance(DateFormat.LONG, Locale.UK));
   }
 
   @Test
@@ -54,7 +59,8 @@ public class DateFormatVendorTests {
 
   @Test
   public void vendor_assumes_default_format_is_short_in_the_correct_locale_if_unset() {
-    assertSameFormat(vendor.getFormatFor(DateFormatVendor.DEFAULT_DATE_FORMAT_ID, Locale.UK, DateFormat.LONG), DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK));
+    assertSameFormat(vendor.getFormatFor(DateFormatVendor.DEFAULT_DATE_FORMAT_ID, Locale.UK, DateFormat.LONG),
+                     DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK));
   }
 
   @Test
@@ -80,7 +86,7 @@ public class DateFormatVendorTests {
     vendor.registerFormat(customFormatID, Locale.UK, dmy, true);
     boolean found = false;
     for (DateFormat f : vendor.getInputFormats(Locale.UK))
-      if (f == dmy)
+      if (f.equals(dmy))
         found = true;
 
     assertTrue(found);
@@ -97,6 +103,26 @@ public class DateFormatVendorTests {
   @Test
   public void vendor_returns_standard_input_formats() {
     assertEquals(4, vendor.getInputFormats(Locale.US).length);
+  }
+
+  @Test
+  public void custom_output_formats_are_unique_instances_for_thread_safety() {
+    vendor.registerFormat(customFormatID, Locale.ENGLISH, dmy, false);
+    assertNotSame(vendor.getFormatFor(customFormatID, Locale.ENGLISH, DateFormat.LONG),
+                  vendor.getFormatFor(customFormatID, Locale.ENGLISH, DateFormat.LONG));
+  }
+
+  @Test
+  public void custom_input_formats_are_unique_instances_for_thread_safety() {
+    vendor.registerFormat(customFormatID, Locale.ENGLISH, dmy, true);
+
+    DateFormat[] list1 = vendor.getInputFormats(Locale.ENGLISH);
+    DateFormat[] list2 = vendor.getInputFormats(Locale.ENGLISH);
+
+    assertEquals(list1.length, list2.length);
+
+    for (int i = 0; i < list1.length; i++)
+      assertNotSame(list1[i], list2[i]);
   }
 
   /**
