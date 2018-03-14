@@ -67,7 +67,7 @@ public final class LanguageSetting {
     try {
       return (ResourceBundle) Class.forName(fqcn).newInstance();
     } catch (Exception e) {
-      log.warn(String.format("Could not find resource bundle: %s.", fqcn));
+      log.warn("Could not find resource bundle: {}.", fqcn);
     }
     return null;
   }
@@ -90,7 +90,7 @@ public final class LanguageSetting {
 
     if (rv != null) {
       if (log.isDebugEnabled())
-        log.debug(String.format("Using preloaded %s for %s", rv.getClass().getSimpleName(), key));
+        log.debug("Using preloaded {} for {}", rv.getClass().getSimpleName(), key);
       return rv;
     }
 
@@ -108,7 +108,7 @@ public final class LanguageSetting {
     } finally {
       if (rv != null) {
         if (log.isDebugEnabled())
-          log.debug(String.format("Saving bundle %s for %s", rv.getClass().getSimpleName(), key));
+          log.debug("Saving bundle {} for {}", rv.getClass().getSimpleName(), key);
         translations.put(key, rv);
       }
     }
