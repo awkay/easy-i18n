@@ -914,7 +914,7 @@ public final class I {
         amount = amount.replace(" ", "\u00a0");
       return fmt.parse(amount);
     } catch (ParseException e) {
-      log.debug("Failed to parse currency: " + amount, e);
+      log.debug("Failed to parse currency: {}", amount, e);
     }
     return defaultValue;
   }

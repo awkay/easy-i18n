@@ -25,7 +25,7 @@ public class ThreadLocalLanguageSettingsProvider implements LanguageSettingsProv
 
   public void setLocale(Locale l) {
     LanguageSetting setting = new LanguageSetting(l);
-    log.debug("setting language bundle to " + setting.translation.getClass().getName());
+    log.debug("Setting language bundle to {}", setting.translation.getClass().getName());
     currentLanguage.set(setting);
   }
 }
