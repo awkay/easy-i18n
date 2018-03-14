@@ -67,7 +67,7 @@ public final class LanguageSetting {
     try {
       return (ResourceBundle) Class.forName(fqcn).newInstance();
     } catch (Exception e) {
-      log.warn("Could not find resource bundle: {}.", fqcn);
+      log.debug("Could not find resource bundle: {}.", fqcn);
     }
     return null;
   }
@@ -104,6 +104,7 @@ public final class LanguageSetting {
       // This ensures that we don't keep retrying to load a locale that has failed 
       // to load...it also makes other bits of the API work by providing an empty
       // bundle to look things up against.
+      log.warn("Could not find candidate bundle for {}", key);
       rv = emptyLanguageBundle;
     } finally {
       if (rv != null) {
