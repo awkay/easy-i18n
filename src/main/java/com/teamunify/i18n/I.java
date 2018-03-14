@@ -618,8 +618,8 @@ public final class I {
     }
 
     if (log.isDebugEnabled())
-      log.debug(String.format("Failed to parse date >%s< when using language settings for %s", source,
-                              s.locale.getLanguage()), e);
+      log.debug("Failed to parse date >{}< when using language settings for {}",
+			  source, s.locale.getLanguage(), e);
 
     return rv;
   }
@@ -914,7 +914,7 @@ public final class I {
         amount = amount.replace(" ", "\u00a0");
       return fmt.parse(amount);
     } catch (ParseException e) {
-      log.debug("Failed to parse currency: " + amount, e);
+      log.debug("Failed to parse currency: {}", amount, e);
     }
     return defaultValue;
   }
