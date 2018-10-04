@@ -1,3 +1,5 @@
+WARNING: This library needs a new maintainer.  I do not intend to do any further updates or releases.  If you want to release a maintained fork I'll be glad to point this at your repository.  You can rename it (and packages) however you like.
+
 # Easy I18N
 
 This is a Java Library that is intended to make it much easier to 
