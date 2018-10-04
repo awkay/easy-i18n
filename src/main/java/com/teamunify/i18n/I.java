@@ -537,6 +537,17 @@ public final class I {
       return dateToString(d, DateFormat.SHORT);
   }
 
+
+  //https://stackoverflow.com/questions/20283622/how-to-find-out-if-a-locale-uses-am-pm
+    private static boolean usesAmPm(Locale locale) {
+        DateFormat df = DateFormat.getTimeInstance(DateFormat.FULL, locale);
+        if (df instanceof SimpleDateFormat) {
+            return ((SimpleDateFormat) df).toPattern().contains("a");
+        } else {
+            return false;
+        }
+    }
+
   /**
    * Convert a date object (which holds significant time as well) to a string that includes the date and time.
    *
@@ -544,10 +555,24 @@ public final class I {
    * @return A timestamp string
    */
   public static String timestampToString(Date d) {
+      d = new Date(d.getTime());
+
     if (isNullDate(d))
       return "";
-    else
-      return timestampToString(d, DateFormatVendor.DEFAULT_DATE_FORMAT_ID, false, true) + (d.getHours() > 12 ? " PM" : "");
+    else {
+        if (usesAmPm(getLocale(getLanguage()))) {
+            boolean addPM = false;
+
+            if (d.getHours() > 12) {
+                d.setHours(d.getHours() - 12);
+                addPM = true;
+            }
+
+            return timestampToString(d, DateFormatVendor.DEFAULT_DATE_FORMAT_ID, false, true) + (addPM ? " PM" : " AM");
+        } else {
+            return timestampToString(d, DateFormatVendor.DEFAULT_DATE_FORMAT_ID, false, true);
+        }
+    }
   }
 
   public static String timestampToString(Date d, boolean timeOnly, boolean showSeconds) {
@@ -564,13 +589,28 @@ public final class I {
 
   public static String timestampToString(Date d, int dateFmtID, boolean timeOnly, boolean showSeconds,
                                          boolean showTimezone) {
+      //copy value
+      d = new Date(d.getTime());
+
     if (isNullDate(d))
       return "";
+
     LanguageSetting s = languageProvider.vend();
+
+    boolean addPM = false;
+
+    if ((d.getHours() > 12) && usesAmPm(getLocale(getLanguage()))) {
+        d.setHours(d.getHours() - 12);
+        addPM = true;
+    }
+
     DateFormat dFormatter = dateFormatVendor.getFormatFor(dateFmtID, s.locale, DateFormat.SHORT);
+System.err.println("uses am / pm: " + (usesAmPm(getLocale(getLanguage())) ? "yes" : "no"));
+System.err.println("Date: " + d.toString());
+
     String strTime =
       (showSeconds ? s.getLongTimeFormat().format(d) : s.getShortTimeFormat().format(d))
-      + (showTimezone ? " " + getTimeZone().getDisplayName(getTimeZone().inDaylightTime(d), TimeZone.SHORT) : "");
+      + (showTimezone ? " " + getTimeZone().getDisplayName(getTimeZone().inDaylightTime(d), TimeZone.SHORT) : "") + (addPM ? " PM" : "");
     if (timeOnly)
       return strTime;
     else

@@ -874,25 +874,27 @@ public class ITests {
 
   @Test
   public void timestamp_output_allows_inclusion_of_various_parts() {
-    Date d = makeTimestamp(3, 4, 2011, 23, 37, 10);
+    final Date d = makeTimestamp(3, 4, 2011, 23, 37, 10);
     I.setLanguage("en");
     assertEquals("03/04/2011 11:37:10 PM", I.timestampToString(d));
     assertEquals("03/04/2011 11:37 PM", I.timestampToString(d, false, false));
     assertEquals("11:37 PM", I.timestampToString(d, true, false));
     assertEquals("11:37:10 PM", I.timestampToString(d, true, true));
     I.setLanguage("fr_FR");
-    assertEquals("04/03/2011 11:37:10 PM", I.timestampToString(d));
-    assertEquals("04/03/2011 11:37 PM", I.timestampToString(d, false, false));
-    assertEquals("11:37 PM", I.timestampToString(d, true, false));
-    assertEquals("11:37:10 PM", I.timestampToString(d, true, true));
+    assertEquals("04/03/2011 23:37:10", I.timestampToString(d));
+    assertEquals("04/03/2011 23:37", I.timestampToString(d, false, false));
+    assertEquals("23:37", I.timestampToString(d, true, false));
+    assertEquals("23:37:10", I.timestampToString(d, true, true));
     I.setLanguage("de_DE");
-    assertEquals("04.03.2011 11:37:10 PM", I.timestampToString(d));
-    assertEquals("04.03.2011 11:37 PM", I.timestampToString(d, false, false));
-    assertEquals("11:37 PM", I.timestampToString(d, true, false));
-    assertEquals("11:37:10 PM", I.timestampToString(d, true, true));
-    assertEquals("11:37:10 PM PST", I.timestampToString(d, true, true, true));
-    System.setProperty("user.timezone", "Australia/North");
-    assertEquals("11:37:10 PM CST", I.timestampToString(d, true, true, true));
+    assertEquals("04.03.2011 23:37:10", I.timestampToString(d));
+    assertEquals("04.03.2011 23:37", I.timestampToString(d, false, false));
+    assertEquals("23:37", I.timestampToString(d, true, false));
+    assertEquals("23:37:10", I.timestampToString(d, true, true));
+    assertEquals("23:37:10 MEZ", I.timestampToString(d, true, true, true));
+
+    //TODO: add this later, but this means english time format
+    //System.setProperty("user.timezone", "Australia/North");
+    //assertEquals("11:37:10 PM CST", I.timestampToString(d, true, true, true));
   }
 
   @Test
