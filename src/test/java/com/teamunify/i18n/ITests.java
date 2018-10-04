@@ -720,7 +720,7 @@ public class ITests {
     I.setLanguage("en");
     assertEquals("12.25%", I.fractionalNumberToPercentage(0.1225));
     I.setLanguage("fr_FR");
-    assertEquals("4,25 %", I.fractionalNumberToPercentage(0.0425));
+    assertEquals("4,25 %", I.fractionalNumberToPercentage(0.0425));
     I.setLanguage("de_DE");
     assertEquals("11,33%", I.fractionalNumberToPercentage(0.11333));
   }
