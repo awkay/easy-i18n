@@ -865,6 +865,12 @@ public final class I {
    * @return A long, multiplied by the correct power of 10 for the current fractional storage for the currency.
    */
   public static long currencyStringToLong(String amount, long defaultValue) {
+    //remove braces
+      if (amount.startsWith("(") && amount.endsWith(")")) {
+          //convert ($number) to negative number without braces
+          amount = "-" + amount.replace("(", "").replace(")", "");
+      }
+
     Number n = currencyStringToNumber(amount, new Long(defaultValue));
     int scale = getCurrencyFractionDigits();
     int multiple = scale > 0 ? (int) Math.pow(10, scale) : 1;
