@@ -1144,7 +1144,18 @@ public final class I {
    */
   public static String fractionalNumberToPercentage(Number n) {
     Locale l = I.languageProvider.vend().locale;
+
     NumberFormat fmt = NumberFormat.getPercentInstance(l);
+
+    //correct space in german
+    if (l.getLanguage().equals("de")) {
+        if (fmt instanceof DecimalFormat) {
+            String pattern = ((DecimalFormat) fmt).toPattern();
+            pattern = pattern.substring(0, pattern.length() - 2) + "%";
+            ((DecimalFormat) fmt).applyPattern(pattern);
+        }
+    }
+
     fmt.setMaximumFractionDigits(2);
     fmt.setMinimumFractionDigits(0);
     return fmt.format(n);
