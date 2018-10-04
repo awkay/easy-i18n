@@ -308,9 +308,9 @@ public class ITests {
     I.setLanguage("en");
     assertEquals("MM/dd/yyyy", I.preferredDateFormat());
     I.setLanguage("fr_FR");
-    assertEquals("dd/MM/yyyy", I.preferredDateFormat());
+    assertEquals("jj/MM/aaaa", I.preferredDateFormat());
     I.setLanguage("de_DE");
-    assertEquals("dd.MM.yyyy", I.preferredDateFormat());
+    assertEquals("tt.MM.uuuu", I.preferredDateFormat());
   }
 
   @Test
@@ -348,9 +348,9 @@ public class ITests {
     I.setLanguage("en_US");
     assertEquals("$1,454,100.34", I.numberToCurrencyString(amount));
     I.setLanguage("fr_FR");
-    assertEquals("1&nbsp;454&nbsp;100,34&nbsp;&euro;", I.numberToCurrencyString(amount));
+    assertEquals("1&nbsp;454&nbsp;100,34 &euro;", I.numberToCurrencyString(amount));
     I.setLanguage("de_DE");
-    assertEquals("1.454.100,34&nbsp;&euro;", I.numberToCurrencyString(amount));
+    assertEquals("1.454.100,34 &euro;", I.numberToCurrencyString(amount));
     I.setLanguage("en_AU");
     assertEquals("$1,454,100.34", I.numberToCurrencyString(amount));
   }
@@ -720,7 +720,7 @@ public class ITests {
     I.setLanguage("en");
     assertEquals("12.25%", I.fractionalNumberToPercentage(0.1225));
     I.setLanguage("fr_FR");
-    assertEquals("4,25 %", I.fractionalNumberToPercentage(0.0425));
+    assertEquals("4,25 %", I.fractionalNumberToPercentage(0.0425));
     I.setLanguage("de_DE");
     assertEquals("11,33%", I.fractionalNumberToPercentage(0.11333));
   }

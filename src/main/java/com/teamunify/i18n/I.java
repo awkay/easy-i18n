@@ -547,7 +547,7 @@ public final class I {
     if (isNullDate(d))
       return "";
     else
-      return timestampToString(d, DateFormatVendor.DEFAULT_DATE_FORMAT_ID, false, true);
+      return timestampToString(d, DateFormatVendor.DEFAULT_DATE_FORMAT_ID, false, true) + (d.getHours() > 12 ? " PM" : "");
   }
 
   public static String timestampToString(Date d, boolean timeOnly, boolean showSeconds) {
