@@ -732,13 +732,22 @@ public class ITests {
     assertEquals("88.3%", I.intToPercentage(883, 1));
     assertEquals("88.35%", I.intToPercentage(8835, 2));
     I.setLanguage("fr_FR");
-    assertEquals("88 %", I.intToPercentage(88, 0));
-    assertEquals("88,3 %", I.intToPercentage(883, 1));
-    assertEquals("88,35 %", I.intToPercentage(8835, 2));
+
+    assertEquals("88 %", I.intToPercentage(88, 0));
+    assertEquals("88,3 %", I.intToPercentage(883, 1));
+    assertEquals("88,35 %", I.intToPercentage(8835, 2));
     I.setLanguage("de_DE");
     assertEquals("88%", I.intToPercentage(88, 0));
     assertEquals("88,3%", I.intToPercentage(883, 1));
     assertEquals("88,35%", I.intToPercentage(8835, 2));
+  }
+
+  protected void printStringToCharNumbers (String str) {
+    char c[] = str.toCharArray();
+
+    for (int i = 0; i < c.length; i++) {
+      System.out.println("c[" + i + "] char: " + c[i] + ", int: " + Character.getNumericValue(c[i]));
+    }
   }
 
   @Test
