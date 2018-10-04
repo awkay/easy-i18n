@@ -687,17 +687,23 @@ public final class I {
     }
     Date timeDate = new Date(0, 0, 0, 0, 0, 0);
 
+    boolean found = false;
+    boolean pm = timeString.endsWith("PM") || timeString.endsWith("pm");
+
     LanguageSetting s = languageProvider.vend();
     for (DateFormat fmt : new DateFormat[] { s.getLongTimeFormat(), s.getShortTimeFormat(),
                                              s.getMilitaryTimeFormat(true), s.getMilitaryTimeFormat(false),
-                                             s.getAccurateTimeFormat(), s.getCompactMilitaryTimeFormat() }) {
+                                             s.getAccurateTimeFormat(), s.getCompactMilitaryTimeFormat()}) {
+
       try {
         timeDate = fmt.parse(timeString);
+        //found = true;
         break;
-      } catch (ParseException e) {}
+      } catch (ParseException e) {
+      }
     }
 
-    return new Date(refDate.getYear(), refDate.getMonth(), refDate.getDate(), timeDate.getHours(),
+    return new Date(refDate.getYear(), refDate.getMonth(), refDate.getDate(), ((!found && pm) ? timeDate.getHours() + 12 : timeDate.getHours()),
                     timeDate.getMinutes(), timeDate.getSeconds());
   }
 
