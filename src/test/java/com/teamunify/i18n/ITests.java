@@ -308,9 +308,9 @@ public class ITests {
     I.setLanguage("en");
     assertEquals("MM/dd/yyyy", I.preferredDateFormat());
     I.setLanguage("fr_FR");
-    assertEquals("jj/MM/aaaa", I.preferredDateFormat());
+    assertEquals("dd/MM/yyyy", I.preferredDateFormat());
     I.setLanguage("de_DE");
-    assertEquals("tt.MM.uuuu", I.preferredDateFormat());
+    assertEquals("dd.MM.yyyy", I.preferredDateFormat());
   }
 
   @Test
