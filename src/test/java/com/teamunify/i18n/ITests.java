@@ -348,9 +348,9 @@ public class ITests {
     I.setLanguage("en_US");
     assertEquals("$1,454,100.34", I.numberToCurrencyString(amount));
     I.setLanguage("fr_FR");
-    assertEquals("1&nbsp;454&nbsp;100,34 &euro;", I.numberToCurrencyString(amount));
+    assertEquals("1&nbsp;454&nbsp;100,34&nbsp;&euro;", I.numberToCurrencyString(amount));
     I.setLanguage("de_DE");
-    assertEquals("1.454.100,34 &euro;", I.numberToCurrencyString(amount));
+    assertEquals("1.454.100,34&nbsp;&euro;", I.numberToCurrencyString(amount));
     I.setLanguage("en_AU");
     assertEquals("$1,454,100.34", I.numberToCurrencyString(amount));
   }
