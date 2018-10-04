@@ -1650,6 +1650,13 @@ public final class I {
     else
       fmt = new SimpleDateFormat("EEEE", l);
 
+    if (l.getLanguage().equals("de")) {
+        String str = fmt.format(day).toString();
+        str = str.replace(".", "");
+
+        return str;
+    }
+
     return fmt.format(day).toString();
   }
 
