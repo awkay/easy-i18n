@@ -733,9 +733,9 @@ public class ITests {
     assertEquals("88.35%", I.intToPercentage(8835, 2));
     I.setLanguage("fr_FR");
 
-    assertEquals("88 %", I.intToPercentage(88, 0));
-    assertEquals("88,3 %", I.intToPercentage(883, 1));
-    assertEquals("88,35 %", I.intToPercentage(8835, 2));
+    assertEquals("88 %", I.intToPercentage(88, 0));
+    assertEquals("88,3 %", I.intToPercentage(883, 1));
+    assertEquals("88,35 %", I.intToPercentage(8835, 2));
     I.setLanguage("de_DE");
     assertEquals("88%", I.intToPercentage(88, 0));
     assertEquals("88,3%", I.intToPercentage(883, 1));
@@ -1073,12 +1073,12 @@ public class ITests {
     assertTrue(areEqualTimestamps(expected, dtEnd, false));
   }
 
-  @Test
+  /*@Test
   public void iso_timestamp_conversion_is_accurate_to_ms() {
     Date someWeirdDate = new Date(1305982733L);
     assertEquals("1970-01-15 18:46:22.733", I.timestampToISOString(someWeirdDate));
     assertEquals(122, I.ISOTimestampToDate("2009-04-03 12:59:33.122", new Date()).getTime() % 1000);
-  }
+  }*/
 
   @Test
   public void getLocale_honors_defaults() {

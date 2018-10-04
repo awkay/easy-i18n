@@ -555,11 +555,11 @@ public final class I {
    * @return A timestamp string
    */
   public static String timestampToString(Date d) {
-      d = new Date(d.getTime());
-
-    if (isNullDate(d))
+      if (isNullDate(d))
       return "";
     else {
+          d = new Date(d.getTime());
+
         if (usesAmPm(getLocale(getLanguage()))) {
             boolean addPM = false;
 
@@ -605,8 +605,6 @@ public final class I {
     }
 
     DateFormat dFormatter = dateFormatVendor.getFormatFor(dateFmtID, s.locale, DateFormat.SHORT);
-System.err.println("uses am / pm: " + (usesAmPm(getLocale(getLanguage())) ? "yes" : "no"));
-System.err.println("Date: " + d.toString());
 
     String strTime =
       (showSeconds ? s.getLongTimeFormat().format(d) : s.getShortTimeFormat().format(d))
