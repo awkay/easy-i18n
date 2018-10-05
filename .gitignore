@@ -11,3 +11,5 @@ target
 .settings
 settings.xml
 *.asc
+
+*.iml

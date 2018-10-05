@@ -537,6 +537,17 @@ public final class I {
       return dateToString(d, DateFormat.SHORT);
   }
 
+
+  //https://stackoverflow.com/questions/20283622/how-to-find-out-if-a-locale-uses-am-pm
+    private static boolean usesAmPm(Locale locale) {
+        DateFormat df = DateFormat.getTimeInstance(DateFormat.FULL, locale);
+        if (df instanceof SimpleDateFormat) {
+            return ((SimpleDateFormat) df).toPattern().contains("a");
+        } else {
+            return false;
+        }
+    }
+
   /**
    * Convert a date object (which holds significant time as well) to a string that includes the date and time.
    *
@@ -544,10 +555,24 @@ public final class I {
    * @return A timestamp string
    */
   public static String timestampToString(Date d) {
-    if (isNullDate(d))
+      if (isNullDate(d))
       return "";
-    else
-      return timestampToString(d, DateFormatVendor.DEFAULT_DATE_FORMAT_ID, false, true);
+    else {
+          d = new Date(d.getTime());
+
+        if (usesAmPm(getLocale(getLanguage()))) {
+            boolean addPM = false;
+
+            if (d.getHours() > 12) {
+                d.setHours(d.getHours() - 12);
+                addPM = true;
+            }
+
+            return timestampToString(d, DateFormatVendor.DEFAULT_DATE_FORMAT_ID, false, true) + (addPM ? " PM" : " AM");
+        } else {
+            return timestampToString(d, DateFormatVendor.DEFAULT_DATE_FORMAT_ID, false, true);
+        }
+    }
   }
 
   public static String timestampToString(Date d, boolean timeOnly, boolean showSeconds) {
@@ -564,13 +589,26 @@ public final class I {
 
   public static String timestampToString(Date d, int dateFmtID, boolean timeOnly, boolean showSeconds,
                                          boolean showTimezone) {
+      //copy value
+      d = new Date(d.getTime());
+
     if (isNullDate(d))
       return "";
+
     LanguageSetting s = languageProvider.vend();
+
+    boolean addPM = false;
+
+    if ((d.getHours() > 12) && usesAmPm(getLocale(getLanguage()))) {
+        d.setHours(d.getHours() - 12);
+        addPM = true;
+    }
+
     DateFormat dFormatter = dateFormatVendor.getFormatFor(dateFmtID, s.locale, DateFormat.SHORT);
+
     String strTime =
       (showSeconds ? s.getLongTimeFormat().format(d) : s.getShortTimeFormat().format(d))
-      + (showTimezone ? " " + getTimeZone().getDisplayName(getTimeZone().inDaylightTime(d), TimeZone.SHORT) : "");
+      + (showTimezone ? " " + getTimeZone().getDisplayName(getTimeZone().inDaylightTime(d), TimeZone.SHORT) : "") + (addPM ? " PM" : "");
     if (timeOnly)
       return strTime;
     else
@@ -687,17 +725,23 @@ public final class I {
     }
     Date timeDate = new Date(0, 0, 0, 0, 0, 0);
 
+    boolean found = false;
+    boolean pm = timeString.endsWith("PM") || timeString.endsWith("pm");
+
     LanguageSetting s = languageProvider.vend();
     for (DateFormat fmt : new DateFormat[] { s.getLongTimeFormat(), s.getShortTimeFormat(),
                                              s.getMilitaryTimeFormat(true), s.getMilitaryTimeFormat(false),
-                                             s.getAccurateTimeFormat(), s.getCompactMilitaryTimeFormat() }) {
+                                             s.getAccurateTimeFormat(), s.getCompactMilitaryTimeFormat()}) {
+
       try {
         timeDate = fmt.parse(timeString);
+        //found = true;
         break;
-      } catch (ParseException e) {}
+      } catch (ParseException e) {
+      }
     }
 
-    return new Date(refDate.getYear(), refDate.getMonth(), refDate.getDate(), timeDate.getHours(),
+    return new Date(refDate.getYear(), refDate.getMonth(), refDate.getDate(), ((!found && pm) ? timeDate.getHours() + 12 : timeDate.getHours()),
                     timeDate.getMinutes(), timeDate.getSeconds());
   }
 
@@ -859,6 +903,12 @@ public final class I {
    * @return A long, multiplied by the correct power of 10 for the current fractional storage for the currency.
    */
   public static long currencyStringToLong(String amount, long defaultValue) {
+    //remove braces
+      if (amount.startsWith("(") && amount.endsWith(")")) {
+          //convert ($number) to negative number without braces
+          amount = "-" + amount.replace("(", "").replace(")", "");
+      }
+
     Number n = currencyStringToNumber(amount, new Long(defaultValue));
     int scale = getCurrencyFractionDigits();
     int multiple = scale > 0 ? (int) Math.pow(10, scale) : 1;
@@ -1138,7 +1188,18 @@ public final class I {
    */
   public static String fractionalNumberToPercentage(Number n) {
     Locale l = I.languageProvider.vend().locale;
+
     NumberFormat fmt = NumberFormat.getPercentInstance(l);
+
+    //correct space in german
+    if (l.getLanguage().equals("de")) {
+        if (fmt instanceof DecimalFormat) {
+            String pattern = ((DecimalFormat) fmt).toPattern();
+            pattern = pattern.substring(0, pattern.length() - 2) + "%";
+            ((DecimalFormat) fmt).applyPattern(pattern);
+        }
+    }
+
     fmt.setMaximumFractionDigits(2);
     fmt.setMinimumFractionDigits(0);
     return fmt.format(n);
@@ -1632,6 +1693,13 @@ public final class I {
       fmt = new SimpleDateFormat("EEE", l);
     else
       fmt = new SimpleDateFormat("EEEE", l);
+
+    if (l.getLanguage().equals("de")) {
+        String str = fmt.format(day).toString();
+        str = str.replace(".", "");
+
+        return str;
+    }
 
     return fmt.format(day).toString();
   }
